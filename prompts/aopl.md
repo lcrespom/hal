@@ -23,7 +23,7 @@ review and provide feedback.
 3. Let's decide on a catchy name for it. For now, we will call it ACOPL: agentic coding
    oriented programming language.
 
-4. Create a proper formal design document in `prompts/design.md`.
+4. Create a complete language specification document in `prompts/language-spec.md`.
 
 5. Create a `prompts/plan.md` document with a multi-step plan to implement a "compiler"
    from ACOPL to TypeScript. Let's choose TypeScript initially because it is very
