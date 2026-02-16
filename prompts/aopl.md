@@ -20,14 +20,14 @@ review and provide feedback.
    programming language would look like, how you would design it and what features would
    you give it.
 
-3. ~~Let's decide on a catchy name for it.~~ **Done.** The language is called **HAL**
-   (High-level Agentic coding Language). File extension: `.hal`. Interface files: `.hali`.
+3. The language is called **HAL** (High-level Agentic coding Language). File extension:
+   `.hal`. Interface files: `.hali`.
 
 4. Create a complete language specification document in `prompts/language-spec.md`.
 
 5. Create a `prompts/plan.md` document with a multi-step plan to implement a "compiler"
-   from HAL to TypeScript. Let's choose TypeScript initially because it is very
-   portable, can run on the web, and has a very large ecosystem / package support.
+   from HAL to TypeScript. Let's choose TypeScript initially because it is very portable,
+   can run on the web, and has a very large ecosystem / package support.
    - The plan should have multiple incremental phases, implementing different aspects of
      the language. Each phase will have a list of tasks marked using the markdown [ ] /
      [x] notation.
@@ -46,10 +46,10 @@ review and provide feedback.
 7. Implement a REPL or incremental compilation mode, so agents can test snippets quickly
    and work iteratively, which matches how agentic coding typically operates.
 
-8. At a certain point, we will decide that the HAL to TypeScript compiler is mature
-   enough to be self-hosted, i.e., written in its own programming language. Thus, version
-   2 of this HAL to typescript compiler will be implemented in HAL, which will be a
-   great way to test the language design. We will then evaluate any issues and potential
+8. At a certain point, we will decide that the HAL to TypeScript compiler is mature enough
+   to be self-hosted, i.e., written in its own programming language. Thus, version 2 of
+   this HAL to typescript compiler will be implemented in HAL, which will be a great way
+   to test the language design. We will then evaluate any issues and potential
    improvements of the language and update its documentation and design if necessary, then
    implement them.
 
