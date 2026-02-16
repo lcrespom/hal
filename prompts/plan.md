@@ -58,11 +58,11 @@ on.
 
 ### Tasks
 
-- [ ] Initialize Node.js project with TypeScript (`package.json`, `tsconfig.json`).
+- [x] Initialize Node.js project with TypeScript (`package.json`, `tsconfig.json`).
       **Notice**: those files already exist, only add and change what's necessary. There
       is no ts => js transpiling, modern node.js can directly run TypeScript.
-- [ ] Set up test framework (Vitest)
-- [ ] Set up project directory structure:
+- [x] Set up test framework (Vitest)
+- [x] Set up project directory structure:
   ```
   hal/
     src/
@@ -80,9 +80,9 @@ on.
       codegen/
       e2e/           # End-to-end: .hal → .ts
   ```
-- [ ] Implement `Source` type (file path, content, line/column lookup from offset)
-- [ ] Implement `Span` type (start position, end position, source reference)
-- [ ] Implement `HalError` base type with structured fields:
+- [x] Implement `Source` type (file path, content, line/column lookup from offset)
+- [x] Implement `Span` type (start position, end position, source reference)
+- [x] Implement `HalError` base type with structured fields:
   - `code`: string (e.g., `"E0101"`)
   - `message`: string
   - `file`: string
@@ -90,17 +90,17 @@ on.
   - `column`: number
   - `span`: Span
   - `suggestion`: optional string
-- [ ] Implement `DiagnosticReporter` with two output modes:
+- [x] Implement `DiagnosticReporter` with two output modes:
   - Human-readable (colored terminal output)
   - JSON (structured, machine-parseable)
-- [ ] Implement CLI skeleton (`hal` command) with:
+- [x] Implement CLI skeleton (`hal` command) with:
   - `hal build <file>` — placeholder that prints "not implemented"
   - `hal test` — placeholder
   - `--format json|human|both` flag for error output format
   - `--help` flag
-- [ ] Write tests for `Source` (line/column lookup)
-- [ ] Write tests for `HalError` (JSON serialization, human-readable formatting)
-- [ ] Write tests for CLI argument parsing
+- [x] Write tests for `Source` (line/column lookup)
+- [x] Write tests for `HalError` (JSON serialization, human-readable formatting)
+- [x] Write tests for CLI argument parsing
 
 ### Deliverable
 
