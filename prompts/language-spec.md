@@ -61,7 +61,7 @@ All HAL source files are UTF-8 encoded. The file extension is `.hal`. Interface 
 
 ## Comments
 
-```
+```rust
 // Single-line comment
 
 /* Multi-line comment
@@ -75,7 +75,7 @@ from interface files (`.hali`) and contract declarations.
 
 The following identifiers are reserved keywords:
 
-```
+```rust
 let, mut, const, fn, pub, return,
 struct, enum, trait, impl,
 if, else, match, case, for, in, while, break, continue,

@@ -33,7 +33,7 @@ type — the transpiler may optimize to `f32` when it can prove no precision los
 Strings are immutable sequences of UTF-8 characters. String interpolation uses `{expr}`
 syntax inside double-quoted strings:
 
-```
+```rust
 let name = "world"
 let greeting = "Hello, {name}!"       // "Hello, world!"
 let computed = "2 + 2 = {2 + 2}"      // "2 + 2 = 4"
@@ -52,7 +52,7 @@ Escape sequences:
 
 Multi-line strings use triple quotes:
 
-```
+```rust
 let sql = """
   SELECT *
   FROM users
@@ -68,7 +68,7 @@ Leading whitespace is stripped based on the indentation of the closing `"""`.
 There is no `void` literal — a function with return type `Void` implicitly returns `Void`
 at the end of its body.
 
-```
+```rust
 fn log_message(msg: String) -> Void
   effects [Logging.Info]
 {
@@ -82,7 +82,7 @@ fn log_message(msg: String) -> Void
 `Never` is the bottom type. A function returning `Never` guarantees it will not return
 normally. This is useful for functions that always error or loop forever.
 
-```
+```rust
 fn fatal(msg: String) -> Never {
   // This function never returns — it always produces an error
   panic(msg)  // built-in that terminates the program
@@ -99,7 +99,7 @@ expected (this is sound because the code path is unreachable).
 An ordered collection of elements of type `T`. Supports O(1) indexed access and O(1)
 amortized append. The transpiler chooses the underlying implementation.
 
-```
+```rust
 let numbers: List<Int> = [1, 2, 3, 4, 5]
 let first = numbers[0]             // Int: 1
 let length = numbers.length()      // Int: 5
@@ -109,7 +109,7 @@ List literal syntax uses square brackets: `[elem1, elem2, ...]`.
 
 Key operations:
 
-```
+```rust
 numbers.length() -> Int
 numbers[index] -> T                       // panics if out of bounds
 numbers.get(index) -> Optional<T>         // safe indexed access
@@ -123,7 +123,7 @@ numbers.is_empty() -> Bool
 
 When the binding is mutable (`let mut`), mutation methods are available:
 
-```
+```rust
 let mut items: List<Int> = [1, 2, 3]
 items.push(4)                             // mutates in place
 items.remove(0)                           // removes element at index
@@ -133,7 +133,7 @@ items.remove(0)                           // removes element at index
 
 A collection of key-value pairs. Keys must implement the `Hashable` and `Eq` traits.
 
-```
+```rust
 let scores: Map<String, Int> = {
   "alice": 100,
   "bob": 85,
@@ -145,7 +145,7 @@ Map literal syntax uses curly braces with `key: value` pairs.
 
 Key operations:
 
-```
+```rust
 scores.get(key) -> Optional<V>
 scores.contains_key(key) -> Bool
 scores.keys() -> List<K>
@@ -157,7 +157,7 @@ scores.is_empty() -> Bool
 
 Mutable operations (when `let mut`):
 
-```
+```rust
 let mut scores: Map<String, Int> = {}
 scores.insert("alice", 100)
 scores.remove("alice")
@@ -167,7 +167,7 @@ scores.remove("alice")
 
 A collection of unique values. Elements must implement `Hashable` and `Eq`.
 
-```
+```rust
 let tags: Set<String> = #{"rust", "hal", "lang"}
 ```
 
@@ -175,7 +175,7 @@ Set literal syntax uses `#{elem1, elem2, ...}`.
 
 Key operations:
 
-```
+```rust
 tags.contains(value) -> Bool
 tags.union(other) -> Set<T>
 tags.intersection(other) -> Set<T>
@@ -189,14 +189,14 @@ tags.is_empty() -> Bool
 Represents a value that may or may not be present. This is HAL's replacement for
 null/nil/undefined.
 
-```
+```rust
 let name: Optional<String> = Optional.some("Alice")
 let missing: Optional<String> = Optional.none()
 ```
 
 `Optional<T>` is an enum with two variants:
 
-```
+```rust
 enum Optional<T> {
   Some(value: T)
   None
@@ -205,7 +205,7 @@ enum Optional<T> {
 
 Operations:
 
-```
+```rust
 opt.is_some() -> Bool
 opt.is_none() -> Bool
 opt.unwrap() -> T                         // panics if None
@@ -217,7 +217,7 @@ opt.and_then(fn(T) -> Optional<U>) -> Optional<U>
 The `?` operator works on `Optional<T>`: if the value is `None`, the function returns
 `None` immediately. The enclosing function must return `Optional<U>` for some `U`.
 
-```
+```rust
 fn get_user_email(id: String) -> Optional<String> {
   let user = find_user(id)?               // returns None if user not found
   return Optional.some(user.email)
@@ -229,7 +229,7 @@ fn get_user_email(id: String) -> Optional<String> {
 Represents either a success value or an error. See
 [error-handling.md](error-handling.md) for full details.
 
-```
+```rust
 enum Result<T, E> {
   Ok(value: T)
   Err(error: E)
@@ -240,7 +240,7 @@ enum Result<T, E> {
 
 Types and functions can be parameterized with type variables:
 
-```
+```rust
 struct Pair<A, B> {
   first: A
   second: B
@@ -255,7 +255,7 @@ fn identity<T>(value: T) -> T {
 
 Type parameters can be constrained with trait bounds:
 
-```
+```rust
 fn find_max<T: Comparable>(items: List<T>) -> Optional<T> {
   // T must implement the Comparable trait
   // ...
@@ -264,7 +264,7 @@ fn find_max<T: Comparable>(items: List<T>) -> Optional<T> {
 
 Multiple bounds use `+`:
 
-```
+```rust
 fn serialize_sorted<T: Serializable + Comparable>(items: List<T>) -> String {
   // ...
 }
@@ -274,7 +274,7 @@ fn serialize_sorted<T: Serializable + Comparable>(items: List<T>) -> String {
 
 For complex bounds, use a `where` clause:
 
-```
+```rust
 fn merge<K, V>(a: Map<K, V>, b: Map<K, V>) -> Map<K, V>
   where K: Hashable + Eq
 {
@@ -287,7 +287,7 @@ fn merge<K, V>(a: Map<K, V>, b: Map<K, V>) -> Map<K, V>
 HAL supports local type inference. The type of a binding can be omitted when the compiler
 can infer it from the right-hand side:
 
-```
+```rust
 let count = 42                      // inferred as Int
 let name = "Alice"                  // inferred as String
 let items = [1, 2, 3]              // inferred as List<Int>
@@ -310,7 +310,7 @@ Type annotations are **optional** in these positions:
 
 Types can be aliased for readability:
 
-```
+```rust
 type UserId = String
 type UserResult = Result<User, UserError>
 type Handler = fn(Request) -> Result<Response, HttpError>
@@ -324,7 +324,7 @@ only for documentation purposes.
 There are no implicit conversions. All conversions are explicit via methods or trait
 implementations:
 
-```
+```rust
 let x: Int = 42
 let f: Float = x.to_float()        // explicit conversion
 let s: String = x.to_string()      // explicit conversion

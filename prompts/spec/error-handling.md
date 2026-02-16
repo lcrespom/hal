@@ -13,7 +13,7 @@ always explicit, local, and visible.
 
 `Result<T, E>` represents either a success or an error:
 
-```
+```rust
 enum Result<T, E> {
   Ok(value: T)
   Err(error: E)
@@ -22,14 +22,14 @@ enum Result<T, E> {
 
 ### Construction
 
-```
+```rust
 let success: Result<Int, String> = Result.ok(42)
 let failure: Result<Int, String> = Result.err("something went wrong")
 ```
 
 ### Inspection
 
-```
+```rust
 result.is_ok() -> Bool
 result.is_err() -> Bool
 result.unwrap() -> T             // panics if Err
@@ -42,7 +42,7 @@ result.and_then(fn(T) -> Result<U, E>) -> Result<U, E>
 
 ### Pattern Matching
 
-```
+```rust
 match result {
   case Result.Ok(value) => {
     // use value
@@ -61,7 +61,7 @@ The `?` operator is the primary way to propagate errors. When applied to a `Resu
 - If the result is `Err(error)`, it returns `Err(error)` from the current function
   immediately.
 
-```
+```rust
 fn read_config(path: String) -> Result<Config, ConfigError>
   effects [FileSystem.Read]
 {
@@ -84,7 +84,7 @@ For `?` to work:
 If the inner error type differs from the outer error type, the `Into` trait performs
 automatic conversion:
 
-```
+```rust
 enum ConfigError {
   IoError(message: String)
   ParseError(message: String)
@@ -111,7 +111,7 @@ fn load_config(path: String) -> Result<Config, ConfigError>
 - If the value is `Some(value)`, it extracts `value`.
 - If the value is `None`, it returns `None` from the current function immediately.
 
-```
+```rust
 fn get_user_city(id: String) -> Optional<String> {
   let user = find_user(id)?          // returns None if user not found
   let address = user.address?        // returns None if no address
@@ -127,7 +127,7 @@ The enclosing function must return `Optional<U>` for some `U`.
 
 Errors are regular enums. There is no special error trait or base class:
 
-```
+```rust
 enum HttpError {
   NotFound(path: String)
   Unauthorized(message: String)
@@ -140,7 +140,7 @@ enum HttpError {
 
 Error enum variants should carry enough information for actionable error messages:
 
-```
+```rust
 // GOOD — carries context:
 enum UserError {
   NotFound(id: String)
@@ -160,7 +160,7 @@ enum UserError {
 
 Error types should implement `Displayable` to provide human-readable messages:
 
-```
+```rust
 impl Displayable for UserError {
   fn display(self) -> String {
     return match self {
@@ -185,7 +185,7 @@ In production code, always use `?` or explicit `match` to handle errors.
 
 ### Chaining with `and_then`
 
-```
+```rust
 fn process_order(id: String) -> Result<Receipt, OrderError>
   effects [Database.Read, Database.Write, Network.Internal]
 {
@@ -198,7 +198,7 @@ fn process_order(id: String) -> Result<Receipt, OrderError>
 
 ### Combining Multiple Results
 
-```
+```rust
 fn create_report() -> Result<Report, ReportError>
   effects [Database.Read]
 {
@@ -218,7 +218,7 @@ fn create_report() -> Result<Report, ReportError>
 
 Use `map_err` to convert error types when `Into` is not implemented:
 
-```
+```rust
 fn load_user(id: String) -> Result<User, AppError>
   effects [Database.Read]
 {

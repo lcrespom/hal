@@ -15,7 +15,7 @@ Collections are covered in [types.md](types.md). This section covers additional 
 
 ### List\<T\>
 
-```
+```rust
 // Construction
 List.empty<T>() -> List<T>
 List.of<T>(items: T...) -> List<T>          // variadic construction
@@ -60,7 +60,7 @@ list.clear() -> Void
 
 ### Map\<K, V\>
 
-```
+```rust
 // Construction
 Map.empty<K, V>() -> Map<K, V>
 Map.from_entries<K, V>(entries: List<(K, V)>) -> Map<K, V>
@@ -88,7 +88,7 @@ map.clear() -> Void
 
 ### Set\<T\>
 
-```
+```rust
 // Construction
 Set.empty<T>() -> Set<T>
 Set.from_list<T>(items: List<T>) -> Set<T>
@@ -117,7 +117,7 @@ set.clear() -> Void
 
 ## String Operations
 
-```
+```rust
 // Query
 str.length() -> Int
 str.is_empty() -> Bool
@@ -148,7 +148,7 @@ Bool.parse(str: String) -> Result<Bool, ParseError>
 
 ## Math Operations
 
-```
+```rust
 // On Int
 Int.abs(value: Int) -> Int
 Int.min(a: Int, b: Int) -> Int
@@ -177,7 +177,7 @@ Float.is_infinite(value: Float) -> Bool
 
 All operations require the corresponding `FileSystem.*` effect.
 
-```
+```rust
 FileSystem.read(path: String) -> Result<String, IoError>
   effects [FileSystem.Read]
 
@@ -211,7 +211,7 @@ FileSystem.move(from: String, to: String) -> Result<Void, IoError>
 
 ## Network Capability
 
-```
+```rust
 struct HttpRequest {
   method: HttpMethod
   url: String
@@ -246,7 +246,7 @@ Network.delete(url: String) -> Result<HttpResponse, NetworkError>
 
 ## Database Capability
 
-```
+```rust
 struct QueryResult {
   rows: List<Map<String, String>>
   affected_rows: Int
@@ -264,7 +264,7 @@ Database.transaction<T>(operation: fn() -> Result<T, DbError>) -> Result<T, DbEr
 
 ## Crypto Capability
 
-```
+```rust
 Crypto.hash_sha256(data: String) -> String
   effects [Crypto.Hash]
 
@@ -283,7 +283,7 @@ Crypto.uuid() -> String
 
 ## Time Capability
 
-```
+```rust
 struct DateTime {
   year: Int
   month: Int
@@ -312,7 +312,7 @@ Duration.from_hours(h: Int) -> Duration
 
 ## Logging Capability
 
-```
+```rust
 Logging.debug(message: String) -> Void
   effects [Logging.Debug]
 
@@ -328,13 +328,13 @@ Logging.error(message: String) -> Void
 
 All logging functions accept string interpolation for structured data:
 
-```
+```rust
 Logging.info("User {user.id} logged in from {ip_address}")
 ```
 
 ## Console Capability
 
-```
+```rust
 Console.write(message: String) -> Void
   effects [Console.Write]
 
@@ -347,7 +347,7 @@ Console.read_line() -> Result<String, IoError>
 
 ## Serialization
 
-```
+```rust
 Json.stringify<T: Serializable>(value: T) -> String
 Json.parse<T: Serializable>(json: String) -> Result<T, JsonError>
 ```

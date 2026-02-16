@@ -29,7 +29,7 @@ The following are statements (do not produce a value):
 
 ### As a Statement
 
-```
+```rust
 if condition {
   // ...
 } else if other_condition {
@@ -46,7 +46,7 @@ Braces are always required — no single-statement form. The condition must be o
 
 `if` can be used as an expression when all branches return a value of the same type:
 
-```
+```rust
 let status = if score >= 90 {
   "excellent"
 } else if score >= 70 {
@@ -56,15 +56,15 @@ let status = if score >= 90 {
 }
 ```
 
-When used as an expression, the `else` branch is required (all cases must be covered).
-The last expression in each branch is the value of that branch (this is the one context
-where an implicit expression-as-value is allowed, for readability in assignment).
+When used as an expression, the `else` branch is required (all cases must be covered). The
+last expression in each branch is the value of that branch (this is the one context where
+an implicit expression-as-value is allowed, for readability in assignment).
 
 ## Pattern Matching: `match`
 
 `match` performs exhaustive pattern matching on a value.
 
-```
+```rust
 match value {
   case Pattern1 => expression_or_block
   case Pattern2 => expression_or_block
@@ -77,7 +77,7 @@ match value {
 The compiler verifies that all possible cases are covered. For enums, every variant must
 appear (or a wildcard `_` must be present). For other types, a wildcard is required.
 
-```
+```rust
 match shape {
   case Shape.Circle(r) => compute_circle_area(r)
   case Shape.Rectangle(w, h) => w * h
@@ -88,21 +88,21 @@ match shape {
 
 ### Pattern Types
 
-| Pattern | Example | Matches |
-| ------- | ------- | ------- |
-| Literal | `case 42 =>` | Exact value |
-| Variable binding | `case x =>` | Any value, bound to `x` |
-| Enum variant | `case Shape.Circle(r) =>` | Specific variant, fields bound |
-| Wildcard | `case _ =>` | Anything (no binding) |
-| Struct destructure | `case User { name, age } =>` | Struct fields bound by name |
-| Nested | `case Optional.Some(Shape.Circle(r)) =>` | Nested pattern |
-| Guard | `case x if x > 0 =>` | Pattern with additional condition |
+| Pattern            | Example                                  | Matches                           |
+| ------------------ | ---------------------------------------- | --------------------------------- |
+| Literal            | `case 42 =>`                             | Exact value                       |
+| Variable binding   | `case x =>`                              | Any value, bound to `x`           |
+| Enum variant       | `case Shape.Circle(r) =>`                | Specific variant, fields bound    |
+| Wildcard           | `case _ =>`                              | Anything (no binding)             |
+| Struct destructure | `case User { name, age } =>`             | Struct fields bound by name       |
+| Nested             | `case Optional.Some(Shape.Circle(r)) =>` | Nested pattern                    |
+| Guard              | `case x if x > 0 =>`                     | Pattern with additional condition |
 
 ### Match as Expression
 
 `match` can be used as an expression:
 
-```
+```rust
 let area = match shape {
   case Shape.Circle(r) => 3.14159 * r * r
   case Shape.Rectangle(w, h) => w * h
@@ -114,7 +114,7 @@ let area = match shape {
 
 When used as a statement, each branch can contain a block:
 
-```
+```rust
 match command {
   case Command.Quit => {
     save_state()
@@ -135,7 +135,7 @@ match command {
 
 Iterates over a collection:
 
-```
+```rust
 for item in collection {
   // item is immutable by default
 }
@@ -143,7 +143,7 @@ for item in collection {
 
 With index:
 
-```
+```rust
 for (index, item) in collection.enumerate() {
   // index: Int, item: T
 }
@@ -151,7 +151,7 @@ for (index, item) in collection.enumerate() {
 
 Range-based:
 
-```
+```rust
 for i in 0..10 {
   // i goes from 0 to 9 (exclusive end)
 }
@@ -165,7 +165,7 @@ for i in 0..=10 {
 
 Repeats while a condition is `true`:
 
-```
+```rust
 while condition {
   // ...
 }
@@ -177,7 +177,7 @@ The condition must be of type `Bool`.
 
 `break` exits the innermost loop. `continue` skips to the next iteration.
 
-```
+```rust
 for item in items {
   if item.is_empty() {
     continue
@@ -203,10 +203,10 @@ HAL does not have:
 
 ## Block Expressions
 
-A block `{ ... }` introduces a new scope. Variables declared inside a block are not visible
-outside it.
+A block `{ ... }` introduces a new scope. Variables declared inside a block are not
+visible outside it.
 
-```
+```rust
 let result = {
   let x = compute_a()
   let y = compute_b()
@@ -220,7 +220,7 @@ Block expressions are useful for limiting scope and computing intermediate value
 
 The `return` keyword exits the current function immediately:
 
-```
+```rust
 fn find_first_positive(items: List<Int>) -> Optional<Int> {
   for item in items {
     if item > 0 {

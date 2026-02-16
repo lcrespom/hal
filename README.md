@@ -6,15 +6,15 @@ readable and reviewable by humans.
 
 ## What is HAL?
 
-HAL is a statically typed, high-level language that compiles to target languages (initially
-TypeScript). Agents write business logic, data models, contracts, and effects. The
-transpiler handles all low-level concerns: memory management, async mechanics, concurrency
-primitives, and platform APIs.
+HAL is a statically typed, high-level language that compiles to target languages
+(initially TypeScript). Agents write business logic, data models, contracts, and effects.
+The transpiler handles all low-level concerns: memory management, async mechanics,
+concurrency primitives, and platform APIs.
 
 Key features:
 
-- **Contract-based design** — preconditions, postconditions, and invariants are first-class
-  language constructs
+- **Contract-based design** — preconditions, postconditions, and invariants are
+  first-class language constructs
 - **Effect system** — side effects are explicitly declared and compiler-verified
 - **Pure by default** — mutation and effects require explicit opt-in
 - **No null/nil** — `Optional<T>` and `Result<T, E>` with the `?` operator
@@ -57,7 +57,7 @@ prompts/
 
 ## Example
 
-```
+```rust
 struct User {
   name: String
   email: String
@@ -84,4 +84,4 @@ test "rejects negative age" {
 
 ## License
 
-TBD
+MIT

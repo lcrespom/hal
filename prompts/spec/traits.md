@@ -6,7 +6,7 @@ This section defines HAL's trait system — the mechanism for shared behavior ac
 
 A **trait** defines a set of methods that types can implement:
 
-```
+```rust
 trait Displayable {
   fn display(self) -> String
 }
@@ -14,7 +14,7 @@ trait Displayable {
 
 Traits can have multiple methods:
 
-```
+```rust
 trait Serializable {
   fn serialize(self) -> String
   fn deserialize(data: String) -> Result<Self, SerializeError>
@@ -25,7 +25,7 @@ trait Serializable {
 
 Trait methods can have default implementations that types inherit unless they override:
 
-```
+```rust
 trait Printable {
   fn to_string(self) -> String
 
@@ -43,7 +43,7 @@ Types implementing `Printable` must provide `to_string`, but get `print` for fre
 
 Trait methods can declare effects:
 
-```
+```rust
 trait Repository<T> {
   fn find(id: String) -> Result<Optional<T>, DbError>
     effects [Database.Read]
@@ -62,7 +62,7 @@ A type implementing this trait must honor these effect declarations.
 
 Types implement traits using `impl Trait for Type` blocks:
 
-```
+```rust
 impl Displayable for User {
   fn display(self) -> String {
     return "{self.name} <{self.email}>"
@@ -94,7 +94,7 @@ impl Displayable for Shape {
 
 Types can have methods that are not part of any trait:
 
-```
+```rust
 impl User {
   fn is_adult(self) -> Bool {
     return self.age >= 18
@@ -115,7 +115,7 @@ Methods receive the instance as the first parameter, named `self`:
 - `self` — immutable access to the instance
 - `mut self` — mutable access (consumes the value)
 
-```
+```rust
 impl Counter {
   fn count(self) -> Int {
     return self.value
@@ -132,7 +132,7 @@ impl Counter {
 
 Methods without a `self` parameter are static — called on the type, not an instance:
 
-```
+```rust
 impl User {
   fn new(name: String, email: String, age: Int) -> Result<User, ValidationError> {
     // validates invariants and returns Result
@@ -146,7 +146,7 @@ let user = User.new("Alice", "alice@example.com", 30)?
 
 Generic type parameters can be constrained to require trait implementations:
 
-```
+```rust
 fn print_all<T: Displayable>(items: List<T>) -> Void
   effects [Console.Write]
 {
@@ -160,7 +160,7 @@ fn print_all<T: Displayable>(items: List<T>) -> Void
 
 Use `+` for multiple trait requirements:
 
-```
+```rust
 fn process<T: Serializable + Displayable>(item: T) -> String {
   return item.serialize()
 }
@@ -170,7 +170,7 @@ fn process<T: Serializable + Displayable>(item: T) -> String {
 
 For complex bounds, use `where`:
 
-```
+```rust
 fn merge_and_display<K, V>(a: Map<K, V>, b: Map<K, V>) -> String
   where K: Hashable + Eq + Displayable,
         V: Displayable
@@ -183,7 +183,7 @@ fn merge_and_display<K, V>(a: Map<K, V>, b: Map<K, V>) -> String
 
 Traits can require other traits as prerequisites:
 
-```
+```rust
 trait Comparable: Eq {
   fn compare(self, other: Self) -> Ordering
 }
@@ -214,7 +214,7 @@ The standard library defines these fundamental traits:
 The compiler can automatically derive implementations of certain traits for structs and
 enums when all fields/variants satisfy the trait:
 
-```
+```rust
 struct Point {
   x: Float
   y: Float

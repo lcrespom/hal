@@ -11,7 +11,7 @@ the compilation target. FFI declarations are isolated in dedicated modules.
 
 An `ffi` block declares bindings to target-specific functions:
 
-```
+```rust
 ffi "typescript" {
   fn fetch(url: String, options: FetchOptions) -> Response
     maps_to "globalThis.fetch"
@@ -23,7 +23,7 @@ ffi "typescript" {
 
 ### Syntax
 
-```
+```rust
 ffi "<target>" {
   fn <name>(<params>) -> <ReturnType>
     maps_to "<target_function>"
@@ -76,7 +76,7 @@ project/
 FFI modules are target-specific. The compiler includes only the FFI modules for the
 current target:
 
-```
+```rust
 // ffi/typescript/dom.hal — only compiled when target is TypeScript
 ffi "typescript" {
   fn query_selector(selector: String) -> Optional<Element>
@@ -89,7 +89,7 @@ ffi "typescript" {
 
 FFI functions are imported and called like any other HAL function:
 
-```
+```rust
 import ffi.typescript.dom.query_selector
 
 fn find_button() -> Optional<Element>
@@ -103,7 +103,7 @@ fn find_button() -> Optional<Element>
 
 For types that exist only on the target platform, declare opaque types in the FFI module:
 
-```
+```rust
 ffi "typescript" {
   type Element           // opaque — HAL code cannot inspect its internals
   type Event
@@ -141,7 +141,7 @@ boundary. The compiler provides these guardrails:
 Wrap FFI functions in HAL functions that provide proper HAL types, error handling, and
 contracts:
 
-```
+```rust
 // ffi/typescript/fetch.hal
 ffi "typescript" {
   type RawResponse

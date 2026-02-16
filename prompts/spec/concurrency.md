@@ -1,7 +1,7 @@
 # Concurrency
 
-This section defines HAL's concurrency model — how agents express concurrent intent without
-specifying concurrency mechanics.
+This section defines HAL's concurrency model — how agents express concurrent intent
+without specifying concurrency mechanics.
 
 ## Design Principle
 
@@ -14,7 +14,7 @@ in HAL.
 The `concurrent` block declares that multiple operations are independent and may be
 executed concurrently:
 
-```
+```rust
 fn fetch_user_data(user_id: String) -> Result<UserData, Error>
   effects [Network.Internal]
 {
@@ -45,18 +45,18 @@ fn fetch_user_data(user_id: String) -> Result<UserData, Error>
 
 The transpiler maps `concurrent` to the target's concurrency model:
 
-| Target | Transpilation |
-| ------ | ------------- |
+| Target     | Transpilation                             |
+| ---------- | ----------------------------------------- |
 | TypeScript | `Promise.all([...])` with `async`/`await` |
-| Rust | `tokio::join!(...)` or similar |
-| Other | Target-idiomatic concurrent execution |
+| Rust       | `tokio::join!(...)` or similar            |
+| Other      | Target-idiomatic concurrent execution     |
 
 ### Error Handling in Concurrent Blocks
 
 Each operation in a `concurrent` block produces its own result. Errors are not
 automatically propagated — the agent handles them after the block completes:
 
-```
+```rust
 let (profile_result, orders_result) = concurrent {
   fetch_profile(user_id)
   fetch_orders(user_id)
@@ -75,7 +75,7 @@ cancellation). The agent decides how to handle partial failures.
 All operations in a `concurrent` block must have their effects declared on the enclosing
 function:
 
-```
+```rust
 fn load_dashboard(user_id: String) -> Result<Dashboard, Error>
   effects [Network.Internal, Database.Read]
 {
@@ -116,7 +116,7 @@ Within a `concurrent` block:
 2. Each operation works on its own copy of captured data.
 3. There are no data races by construction.
 
-```
+```rust
 // COMPILE ERROR — operations share mutable state:
 let mut counter = 0
 let (a, b) = concurrent {
@@ -129,7 +129,7 @@ let (a, b) = concurrent {
 
 `concurrent` blocks can be nested (the transpiler flattens them appropriately):
 
-```
+```rust
 fn load_all(ids: List<String>) -> Result<List<Data>, Error>
   effects [Network.Internal, Database.Read]
 {
@@ -145,7 +145,7 @@ fn load_all(ids: List<String>) -> Result<List<Data>, Error>
 However, dynamically-sized concurrent operations (e.g., running N operations for N items)
 use the `concurrent_map` function:
 
-```
+```rust
 fn fetch_all_profiles(user_ids: List<String>) -> Result<List<Profile>, Error>
   effects [Network.Internal]
 {

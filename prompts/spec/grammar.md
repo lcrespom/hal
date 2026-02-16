@@ -4,7 +4,7 @@ This section defines the complete formal grammar for HAL using EBNF notation.
 
 ## Notation Conventions
 
-```
+```ebnf
 rule        = definition ;
 "keyword"   = terminal (literal text)
 ( ... )     = grouping
@@ -15,7 +15,7 @@ rule        = definition ;
 
 ## Program Structure
 
-```
+```ebnf
 Program         = { TopLevelDecl } ;
 
 TopLevelDecl    = ImportDecl
@@ -34,7 +34,7 @@ TopLevelDecl    = ImportDecl
 
 ## Imports
 
-```
+```ebnf
 ImportDecl      = "import" ModulePath [ "." ImportList ] ;
 ModulePath      = Ident { "." Ident } ;
 ImportList      = Ident [ "as" Ident ]
@@ -45,14 +45,14 @@ ImportList      = Ident [ "as" Ident ]
 
 ### Variables and Constants
 
-```
+```ebnf
 LetDecl         = "let" [ "mut" ] Ident [ ":" Type ] "=" Expr ;
 ConstDecl       = [ "pub" ] "const" Ident ":" Type "=" Expr ;
 ```
 
 ### Functions
 
-```
+```ebnf
 FnDecl          = [ "pub" ] "fn" Ident [ GenericParams ] "(" [ ParamList ] ")"
                   [ "->" Type ]
                   [ WhereClause ]
@@ -74,7 +74,7 @@ EffectRef       = Ident [ "." Ident ] ;
 
 ### Structs
 
-```
+```ebnf
 StructDecl      = [ "pub" ] "struct" Ident [ GenericParams ]
                   "{" { StructField } { InvariantClause } [ DeriveClause ] "}" ;
 
@@ -87,7 +87,7 @@ DeriveClause    = "derive" "[" Ident { "," Ident } "]" ;
 
 ### Enums
 
-```
+```ebnf
 EnumDecl        = [ "pub" ] "enum" Ident [ GenericParams ]
                   "{" EnumVariant { EnumVariant } { InvariantClause } "}" ;
 
@@ -98,7 +98,7 @@ VariantField    = Ident ":" Type ;
 
 ### Traits
 
-```
+```ebnf
 TraitDecl       = [ "pub" ] "trait" Ident [ GenericParams ]
                   [ ":" TraitBounds ]
                   "{" { TraitMethod } "}" ;
@@ -113,7 +113,7 @@ TraitMethod     = "fn" Ident [ GenericParams ] "(" [ ParamList ] ")"
 
 ### Impl Blocks
 
-```
+```ebnf
 ImplBlock       = "impl" [ TraitRef "for" ] Type [ WhereClause ]
                   "{" { FnDecl } "}" ;
 
@@ -122,19 +122,19 @@ TraitRef        = Ident [ GenericArgs ] ;
 
 ### Effects
 
-```
+```ebnf
 EffectDecl      = [ "pub" ] "effect" Ident "{" { Ident } "}" ;
 ```
 
 ### Type Aliases
 
-```
+```ebnf
 TypeAlias       = [ "pub" ] "type" Ident [ GenericParams ] "=" Type ;
 ```
 
 ### FFI
 
-```
+```ebnf
 FfiBlock        = "ffi" StringLit "{" { FfiDecl } "}" ;
 
 FfiDecl         = FfiTypeDecl | FfiFnDecl ;
@@ -148,7 +148,7 @@ FfiFnDecl       = "fn" Ident "(" [ ParamList ] ")" [ "->" Type ]
 
 ## Testing
 
-```
+```ebnf
 TestDecl        = "test" StringLit Block ;
 
 TestSuiteDecl   = "test" "suite" StringLit "{" { TestDecl | TestSuiteDecl } "}" ;
@@ -156,7 +156,7 @@ TestSuiteDecl   = "test" "suite" StringLit "{" { TestDecl | TestSuiteDecl } "}" 
 
 ## Types
 
-```
+```ebnf
 Type            = PrimitiveType
                 | NamedType
                 | GenericType
@@ -175,7 +175,7 @@ TypeList        = Type { "," Type } ;
 
 ## Generics
 
-```
+```ebnf
 GenericParams   = "<" GenericParam { "," GenericParam } ">" ;
 GenericParam    = Ident [ ":" TraitBounds ] ;
 TraitBounds     = Ident { "+" Ident } ;
@@ -188,7 +188,7 @@ WherePred       = Ident ":" TraitBounds ;
 
 ## Statements
 
-```
+```ebnf
 Statement       = LetDecl
                 | Assignment
                 | ReturnStmt
@@ -211,7 +211,7 @@ ContinueStmt    = "continue" ;
 
 ## Expressions
 
-```
+```ebnf
 Expr            = OrExpr ;
 
 OrExpr          = AndExpr { "or" AndExpr } ;
@@ -250,7 +250,7 @@ Arg             = [ Ident ":" ] Expr ;       // named arguments optional
 
 ## Control Flow
 
-```
+```ebnf
 IfStmt          = "if" Expr Block { "else" "if" Expr Block } [ "else" Block ] ;
 IfExpr          = "if" Expr Block { "else" "if" Expr Block } "else" Block ;
 
@@ -269,7 +269,7 @@ ConcurrentBlock = "concurrent" "{" Expr { Expr } "}" ;
 
 ## Patterns
 
-```
+```ebnf
 Pattern         = LiteralPattern
                 | WildcardPattern
                 | BindingPattern
@@ -287,7 +287,7 @@ PatternField    = Ident [ ":" Pattern ] ;
 
 ## Literals
 
-```
+```ebnf
 Literal         = IntLit
                 | FloatLit
                 | StringLit
@@ -323,14 +323,14 @@ ClosureParam    = Ident [ ":" Type ] ;
 
 ## Blocks
 
-```
+```ebnf
 Block           = "{" { Statement } [ Expr ] "}" ;
 BlockExpr       = Block ;
 ```
 
 ## Assertions (in tests)
 
-```
+```ebnf
 AssertStmt      = "assert" Expr
                 | "assert_eq" "(" Expr "," Expr ")"
                 | "assert_ne" "(" Expr "," Expr ")" ;
@@ -338,7 +338,7 @@ AssertStmt      = "assert" Expr
 
 ## Identifiers and Lexical Elements
 
-```
+```ebnf
 Ident           = Letter { Letter | Digit | "_" } ;
 Letter          = "a".."z" | "A".."Z" | "_" ;
 Digit           = "0".."9" ;

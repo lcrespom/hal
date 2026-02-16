@@ -6,7 +6,7 @@ This section defines function declarations, closures, contracts, and purity rule
 
 Functions are declared with the `fn` keyword:
 
-```
+```rust
 fn function_name(param1: Type1, param2: Type2) -> ReturnType {
   // body
 }
@@ -29,7 +29,7 @@ A function declaration has these parts, in order:
 
 Full example:
 
-```
+```rust
 pub fn find_user<T: Identifiable>(id: String, source: T) -> Result<User, UserError>
   where T: Queryable
   precondition { id.length() > 0 }
@@ -46,7 +46,7 @@ pub fn find_user<T: Identifiable>(id: String, source: T) -> Result<User, UserErr
 Parameters are always passed by value. The transpiler may optimize to pass-by-reference
 when it can prove immutability, but this is invisible to the agent.
 
-```
+```rust
 fn greet(name: String) -> String {
   return "Hello, {name}!"
 }
@@ -57,7 +57,7 @@ fn greet(name: String) -> String {
 By default, parameters are immutable within the function body. To mutate a parameter, the
 caller passes it explicitly and the function declares it `mut`:
 
-```
+```rust
 fn add_item(mut list: List<Int>, item: Int) -> List<Int> {
   list.push(item)
   return list
@@ -71,7 +71,7 @@ reference or pointer types.
 
 The return type follows `->`. If omitted, the return type is `Void`.
 
-```
+```rust
 fn do_work() {              // returns Void
   // ...
 }
@@ -84,7 +84,7 @@ fn get_count() -> Int {     // returns Int
 The `return` keyword is required for returning values. There are no implicit returns —
 the last expression is not automatically returned (principle 3: Explicit Over Implicit).
 
-```
+```rust
 // CORRECT:
 fn add(a: Int, b: Int) -> Int {
   return a + b
@@ -106,7 +106,7 @@ documentation and correctness checks.
 A `precondition` declares what must be true before the function is called. If violated, the
 program fails with a contract violation error.
 
-```
+```rust
 fn withdraw(account: Account, amount: Float) -> Result<Account, BankError>
   precondition { amount > 0.0 }
   precondition { amount <= account.balance }
@@ -122,7 +122,7 @@ Multiple `precondition` blocks are allowed — all must hold.
 A `postcondition` declares what is guaranteed after the function returns. The parameter
 name in parentheses binds to the return value.
 
-```
+```rust
 fn sort<T: Comparable>(items: List<T>) -> List<T>
   postcondition(result) { result.length() == items.length() }
 {
@@ -153,7 +153,7 @@ Functions are **pure by default**. A pure function:
 
 To perform side effects, a function must declare them with `effects`:
 
-```
+```rust
 fn save(user: User) -> Result<Void, DbError>
   effects [Database.Write]
 {
@@ -171,7 +171,7 @@ See [effects.md](effects.md) for the full effect system specification.
 
 A function can declare effects it guarantees it will *never* perform:
 
-```
+```rust
 fn compute_score(data: List<Int>) -> Int
   forbids [Network, Database, FileSystem]
 {
@@ -182,7 +182,7 @@ fn compute_score(data: List<Int>) -> Int
 
 `forbids` is complementary to `effects`. A function can have both:
 
-```
+```rust
 fn process(input: String) -> Result<String, Error>
   effects [Logging.Info]
   forbids [Network, Database]
@@ -195,14 +195,14 @@ fn process(input: String) -> Result<String, Error>
 
 Closures are anonymous functions. They use the syntax `fn(params) -> ReturnType { body }`:
 
-```
+```rust
 let double = fn(x: Int) -> Int { return x * 2 }
 let result = double(21)    // 42
 ```
 
 When passed as arguments, parameter types can be inferred from context:
 
-```
+```rust
 let numbers = [1, 2, 3, 4, 5]
 let evens = numbers.filter(fn(n) { return n % 2 == 0 })
 ```
@@ -214,7 +214,7 @@ capture mutably, the closure must be declared in a mutable binding context.
 
 The type of a closure is written as a function type:
 
-```
+```rust
 type Predicate<T> = fn(T) -> Bool
 type Transform<A, B> = fn(A) -> B
 
@@ -228,7 +228,7 @@ fn apply<A, B>(value: A, transform: fn(A) -> B) -> B {
 There is no function overloading. Each function name in a scope must be unique. Use
 different names or generic functions instead:
 
-```
+```rust
 // WRONG — no overloading:
 fn process(x: Int) -> String { ... }
 fn process(x: String) -> String { ... }
@@ -246,7 +246,7 @@ fn process<T: Processable>(x: T) -> String { ... }
 Recursion is allowed. The compiler may optimize tail recursion into iteration for targets
 that do not support unbounded stack growth.
 
-```
+```rust
 fn factorial(n: Int) -> Int
   precondition { n >= 0 }
 {

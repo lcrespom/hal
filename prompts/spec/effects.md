@@ -16,7 +16,7 @@ them. The compiler verifies that:
 
 Effects are declared as named hierarchies:
 
-```
+```rust
 effect FileSystem {
   Read
   Write
@@ -71,7 +71,7 @@ Effects form a hierarchy. Declaring a parent effect includes all child effects:
 
 Modules can define their own effects:
 
-```
+```rust
 effect PaymentGateway {
   Charge
   Refund
@@ -85,7 +85,7 @@ Custom effects follow the same rules as built-in effects.
 
 A function declares its effects between the signature and the body:
 
-```
+```rust
 fn read_file(path: String) -> Result<String, IoError>
   effects [FileSystem.Read]
 {
@@ -104,7 +104,7 @@ fn save_user(user: User) -> Result<Void, DbError>
 
 A function can declare multiple effects:
 
-```
+```rust
 fn sync_data() -> Result<Void, SyncError>
   effects [Network.External, Database.Write, Logging.Info]
 {
@@ -120,7 +120,7 @@ Effects propagate through the call graph. If function A calls function B, and B 
 `effects [Database.Write]`, then A must also declare `Database.Write` (or its parent
 `Database`).
 
-```
+```rust
 fn save_user(user: User) -> Result<Void, DbError>
   effects [Database.Write]
 {
@@ -145,7 +145,7 @@ A must declare those effects.
 
 If a function calls an effectful function without declaring the effect:
 
-```
+```rust
 fn register_user(name: String, email: String) -> Result<User, RegistrationError>
   // Missing: effects [Database.Write]
 {
@@ -171,7 +171,7 @@ The compiler produces:
 
 A function can declare effects it guarantees it will *never* perform:
 
-```
+```rust
 fn compute_total(items: List<Item>) -> Float
   forbids [Network, Database, FileSystem]
 {
@@ -190,7 +190,7 @@ performs any forbidden effect.
 
 A function can have both:
 
-```
+```rust
 fn process_order(order: Order) -> Result<Receipt, OrderError>
   effects [Database.Write, Logging.Info]
   forbids [Network.External]
@@ -231,7 +231,7 @@ A function with no `effects` declaration is pure. The compiler guarantees it:
 - Always returns the same output for the same inputs
 - Does not call any effectful functions
 
-```
+```rust
 fn add(a: Int, b: Int) -> Int {
   return a + b
 }
@@ -246,7 +246,7 @@ used only when a function genuinely needs to interact with the outside world.
 Higher-order functions can be polymorphic over effects. When a function takes a callback,
 the callback's effects propagate to the caller:
 
-```
+```rust
 fn with_logging<T>(operation: fn() -> T) -> T
   effects [Logging.Info]
 {

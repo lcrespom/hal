@@ -11,7 +11,7 @@ tests, discover tests, and run tests. No framework choice, no configuration, no 
 
 A **test** is declared with the `test` keyword followed by a string name and a body:
 
-```
+```rust
 test "addition works" {
   assert 1 + 1 == 2
 }
@@ -37,7 +37,7 @@ body executes to completion without assertion failure, the test passes.
 
 Tests can be grouped into **suites** for organization:
 
-```
+```rust
 test suite "User validation" {
   test "rejects negative age" {
     let result = User.new("Alice", "alice@example.com", -1)
@@ -58,7 +58,7 @@ test suite "User validation" {
 
 Suites can be nested:
 
-```
+```rust
 test suite "Authentication" {
   test suite "password hashing" {
     test "hashed password differs from original" { ... }
@@ -78,7 +78,7 @@ test suite "Authentication" {
 
 The basic assertion — verifies that an expression is `true`:
 
-```
+```rust
 assert 1 + 1 == 2
 assert user.age >= 0
 assert list.contains("item")
@@ -94,7 +94,7 @@ When an assertion fails, the test runner reports:
 Asserts that two values are equal. Provides better error messages than `assert a == b`
 because it shows both values:
 
-```
+```rust
 assert_eq(result, 42)
 // On failure: "Expected 42, got 37"
 ```
@@ -103,7 +103,7 @@ assert_eq(result, 42)
 
 Asserts that two values are not equal:
 
-```
+```rust
 assert_ne(a, b)
 // On failure: "Expected values to differ, but both are 42"
 ```
@@ -116,7 +116,7 @@ Tests can live in two places:
 
 Tests at the bottom of a `.hal` file, after the implementation:
 
-```
+```rust
 // src/math.hal
 
 pub fn add(a: Int, b: Int) -> Int {
@@ -153,7 +153,7 @@ tests/
 
 Test files import the modules they test:
 
-```
+```rust
 // tests/math_test.hal
 import math.{ add, divide }
 
@@ -171,7 +171,7 @@ Test files can only access `pub` declarations.
 Tests can use effectful functions. The test runner provides mock implementations of
 standard effects:
 
-```
+```rust
 test "save_user writes to database" {
   let user = User.new("Alice", "alice@example.com", 30).unwrap()
   let result = save_user(user)
@@ -186,7 +186,7 @@ capabilities. For custom effects, see Test Fixtures below.
 
 For shared setup and teardown, use helper functions:
 
-```
+```rust
 fn create_test_user() -> User {
   return User.new("Test", "test@example.com", 25).unwrap()
 }
@@ -212,7 +212,7 @@ function calls are clearer and more predictable for agents.
 
 The compiler can automatically generate test cases from contracts:
 
-```
+```rust
 fn withdraw(account: Account, amount: Float) -> Result<Account, BankError>
   precondition { amount > 0.0 }
   precondition { amount <= account.balance }
@@ -267,7 +267,7 @@ Test output is structured (JSON) for programmatic consumption by agents:
 Human-readable output is also produced alongside the JSON, controlled by the `--format`
 flag:
 
-```
+```sh
 hal test                         # human-readable (default)
 hal test --format json           # JSON only
 hal test --format both           # both human-readable and JSON
@@ -275,7 +275,7 @@ hal test --format both           # both human-readable and JSON
 
 ## Running Tests
 
-```
+```sh
 hal test                         # run all tests
 hal test src/math.hal            # run tests in a specific file
 hal test --suite "User"          # run tests matching suite name

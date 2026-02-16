@@ -34,7 +34,7 @@ src/
 All declarations are **private by default**. The `pub` keyword makes a declaration part of
 the module's public API.
 
-```
+```rust
 pub struct User { ... }         // visible to other modules
 pub fn create_user() { ... }   // visible to other modules
 fn helper() { ... }            // private to this module
@@ -59,7 +59,7 @@ simplifies the mental model for agents.
 
 Modules import declarations from other modules using `import`:
 
-```
+```rust
 import auth.password.hash
 import auth.password.verify
 import http.router.Router
@@ -69,7 +69,7 @@ import http.router.Router
 
 Multiple imports from the same module can be grouped:
 
-```
+```rust
 import auth.password.{ hash, verify }
 import http.{ Router, Request, Response }
 ```
@@ -78,7 +78,7 @@ import http.{ Router, Request, Response }
 
 Use `as` to rename an import:
 
-```
+```rust
 import auth.token.Token as AuthToken
 import crypto.hash as crypto_hash
 ```
@@ -90,7 +90,7 @@ import crypto.hash as crypto_hash
 2. **No re-exports** — importing a name does not make it part of the current module's
    public API. To expose something from a submodule, use `pub import`:
 
-```
+```rust
 // In auth/mod.hal
 pub import auth.password.{ hash, verify }
 // Now auth.hash and auth.verify are available to importers of auth
@@ -107,7 +107,7 @@ pub import auth.password.{ hash, verify }
 Each module can have a corresponding **interface file** (`.hali`) that declares its public
 API without implementation details.
 
-```
+```rust
 // auth/password.hali
 pub fn hash(password: String) -> String
   effects [Crypto.Hash]
@@ -139,7 +139,7 @@ Interface files serve two goals:
 
 The toolchain can auto-generate `.hali` files from `.hal` files:
 
-```
+```sh
 hal interface src/auth/password.hal
 ```
 
@@ -182,7 +182,7 @@ typescript = { output = "dist/" }
 HAL-native packages are written in HAL and live in a HAL package registry. They are
 imported directly:
 
-```
+```rust
 import hal_http.{ Server, Route }
 import hal_json.{ parse, stringify }
 ```
@@ -235,7 +235,7 @@ project/
 
 A binding file looks like a HAL interface file but maps to external package exports:
 
-```
+```rust
 // bindings/zod.halx
 // Binding for: zod@3.22.0 (npm)
 
@@ -262,7 +262,7 @@ pub enum ValidationError {
 }
 ```
 
-```
+```rust
 // bindings/express.halx
 // Binding for: express@4.18.0 (npm)
 
@@ -312,7 +312,7 @@ pub fn listen(app: App, port: Int) -> Void
 
 Once a binding exists, the agent imports it like any HAL module:
 
-```
+```rust
 import express.{ create_app, get, send, listen, Request, Response }
 
 fn main() -> Void
@@ -339,7 +339,7 @@ The agent writes pure HAL. The transpiler:
 Writing bindings by hand is feasible but tedious for large packages. The toolchain can
 auto-generate bindings from TypeScript type definitions:
 
-```
+```sh
 hal bind express --registry npm --version 4.18.0
 ```
 

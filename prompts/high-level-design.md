@@ -35,7 +35,7 @@ the language.
 
 A small set of primitive types:
 
-```
+```rust
 Int, Float, Bool, String, Void, Never
 ```
 
@@ -57,7 +57,7 @@ based on usage. The agent just works with `List<T>`.
 
 Types and functions can be parameterized:
 
-```
+```rust
 struct Stack<T> {
   items: List<T>
 }
@@ -70,7 +70,7 @@ fn pop<T>(stack: mut Stack<T>) -> Optional<T> { ... }
 Traits define shared behavior. Types implement traits explicitly — no implicit structural
 typing.
 
-```
+```rust
 trait Serializable {
   fn serialize(self) -> String
   fn deserialize(data: String) -> Result<Self, SerializeError>
@@ -88,7 +88,7 @@ impl Serializable for User {
 
 All declarations follow a consistent pattern: `keyword name: Type = value`.
 
-```
+```rust
 let count: Int = 0           // immutable binding
 let mut total: Int = 0       // mutable binding (explicit opt-in)
 const MAX_SIZE: Int = 1024   // compile-time constant
@@ -98,7 +98,7 @@ const MAX_SIZE: Int = 1024   // compile-time constant
 
 Functions declare their signature, contracts, and effects up front:
 
-```
+```rust
 fn divide(numerator: Float, denominator: Float) -> Result<Float, MathError>
   precondition { denominator != 0.0 }
   postcondition(result) { result.is_ok() implies result.unwrap() * denominator == numerator }
@@ -112,7 +112,7 @@ fn divide(numerator: Float, denominator: Float) -> Result<Float, MathError>
 
 Functions are pure by default. Side effects require explicit declaration:
 
-```
+```rust
 fn save_user(user: User) -> Result<Void, DbError>
   effects [Database.Write]
 {
@@ -122,7 +122,7 @@ fn save_user(user: User) -> Result<Void, DbError>
 
 The `forbids` clause provides negative guarantees:
 
-```
+```rust
 fn compute_total(items: List<Item>) -> Float
   forbids [Network, Database]
 {
@@ -135,7 +135,7 @@ fn compute_total(items: List<Item>) -> Float
 
 Standard, predictable control flow — no surprises:
 
-```
+```rust
 // Conditional
 if condition {
   // ...
@@ -168,7 +168,7 @@ while condition {
 
 No exceptions. All errors flow through `Result<T, E>`:
 
-```
+```rust
 fn read_config(path: String) -> Result<Config, ConfigError>
   effects [FileSystem.Read]
 {
@@ -183,7 +183,7 @@ unchecked exceptions, no panics in normal code.
 
 ### Structs and Enums
 
-```
+```rust
 struct User {
   name: String
   email: String
@@ -205,7 +205,7 @@ Tests are a first-class language construct, not a library convention. This ensur
 always know exactly how to write and discover tests — no framework choice, no
 configuration, no ambiguity.
 
-```
+```rust
 test "division by zero returns error" {
   let result = divide(10.0, 0.0)
   assert result.is_err()
@@ -221,7 +221,7 @@ test "division returns correct result" {
 
 Tests can be grouped into suites for organization:
 
-```
+```rust
 test suite "User validation" {
   test "rejects negative age" {
     let result = User.new("Alice", "alice@example.com", -1)
@@ -248,7 +248,7 @@ Key properties:
 
 Each file is a module. The directory structure defines the module hierarchy:
 
-```
+```rust
 src/
   main.hal              // module: main
   auth/
@@ -265,7 +265,7 @@ src/
 All declarations are private by default. The `pub` keyword makes them part of the module's
 public API:
 
-```
+```rust
 pub struct User { ... }        // public type
 pub fn create_user() { ... }   // public function
 fn helper() { ... }            // private, module-internal
@@ -275,7 +275,7 @@ fn helper() { ... }            // private, module-internal
 
 Explicit, unambiguous imports:
 
-```
+```rust
 import auth.password.{ hash, verify }
 import http.router.Router
 import collections.List
@@ -291,7 +291,7 @@ without implementation details. This supports principle 10 (Scalability by Desig
 agents can read the interface to understand a module without loading the full
 implementation.
 
-```
+```rust
 // auth/password.hali
 pub fn hash(password: String) -> String
   effects [Crypto.Hash]
@@ -304,7 +304,7 @@ pub fn verify(password: String, hash: String) -> Bool
 
 Effects are declared as a hierarchy, enabling fine-grained control:
 
-```
+```rust
 effect FileSystem {
   Read
   Write
@@ -336,7 +336,7 @@ effects.
 
 Agents express **concurrency intent**, not concurrency mechanics:
 
-```
+```rust
 fn fetch_user_data(user_id: String) -> Result<UserData, Error>
   effects [Network.Internal]
 {
@@ -382,7 +382,7 @@ to `fs.readFile` (TypeScript), `std::fs::read` (Rust), etc.
 FFI is the explicit boundary between HAL and the target platform. It is the **only**
 place where target-specific details appear:
 
-```
+```rust
 ffi "typescript" {
   fn fetch(url: String, options: FetchOptions) -> Response
     maps_to "globalThis.fetch"
