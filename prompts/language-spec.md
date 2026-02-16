@@ -57,7 +57,7 @@ Each section is a self-contained document. Read only what you need.
 ## Source Encoding
 
 All HAL source files are UTF-8 encoded. The file extension is `.hal`. Interface files use
-`.hali`.
+`.hali`. External package binding files use `.halx`.
 
 ## Comments
 

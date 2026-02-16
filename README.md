@@ -21,6 +21,8 @@ Key features:
 - **First-class testing** — `test` and `test suite` are language keywords, not library
   conventions
 - **Target-independent** — agents write HAL; the transpiler maps to TypeScript, Rust, etc.
+- **Ecosystem access** — use npm/JSR packages through binding files (`.halx`) while
+  keeping HAL code fully isolated from the target platform
 - **Machine-friendly diagnostics** — structured JSON error output alongside human-readable
   messages
 
