@@ -32,12 +32,37 @@ The code should say what it means. Hidden behavior forces agents to maintain men
 of invisible state, which is a common source of bugs.
 
 - No implicit imports, injections, or globals.
-- Side effects must be declared in function signatures (e.g., via an effect system or
-  explicit annotations).
 - No auto-coercion, auto-dereferencing, or implicit returns.
 - Dependencies and data flow should be visible in the source text.
+- Side effects are governed by the Effect System (principle 5).
 
-## 4. Strong Locality of Reasoning
+## 4. Contract-Based Design
+
+Functions and data types should declare their contracts — preconditions, postconditions,
+and invariants — as first-class language constructs. This gives agents a mechanical way to
+reason about correctness and enables automatic test generation.
+
+- Functions can declare `precondition` (what must be true before the call) and
+  `postcondition` (what is guaranteed after the call).
+- Data types can declare `invariant` (properties that must always hold).
+- The compiler enforces these contracts at compile time where possible and generates
+  runtime checks otherwise.
+- Contracts serve as machine-verifiable documentation — agents can read them to understand
+  a function's behavior without reading its implementation.
+
+## 5. Effect System
+
+Side effects must be explicitly declared and controlled. An effect system makes it possible
+to know exactly what a function can and cannot do, which is critical for agents to reason
+about safety and composition.
+
+- Functions declare their effects (e.g., `effects: [Database.Write, Logger.Info]`).
+- Functions can also declare what they forbid (e.g., `forbids: [Network.External]`),
+  providing strong negative guarantees.
+- The compiler verifies that a function does not perform undeclared effects.
+- Pure functions (no effects) are the default — effects require explicit opt-in.
+
+## 6. Strong Locality of Reasoning
 
 A developer (human or agent) should be able to understand a piece of code by reading only
 that piece and its immediate declarations — without chasing through distant files or
@@ -51,7 +76,7 @@ inherited behaviors.
 - Error handling should be local and explicit (no unchecked exceptions propagating
   silently).
 
-## 5. Minimal Hidden State
+## 7. Minimal Hidden State
 
 Mutable shared state is the primary source of complexity that agents struggle with. The
 language should make state visible and contained.
@@ -63,7 +88,7 @@ language should make state visible and contained.
 - State changes should be traceable — prefer explicit state transitions over scattered
   mutations.
 
-## 6. Predictable Structure
+## 8. Predictable Structure
 
 Agents work best when code follows predictable patterns. The language should encourage (or
 enforce) consistent project structure.
@@ -73,7 +98,7 @@ enforce) consistent project structure.
   looks the same.
 - A standard project layout convention so agents always know where to find things.
 
-## 7. Machine-Friendly Diagnostics
+## 9. Machine-Friendly Diagnostics
 
 Error messages and compiler output should be designed for both humans and machines to
 consume.
@@ -83,7 +108,7 @@ consume.
 - Error messages should be actionable: state what went wrong and suggest how to fix it.
 - Warnings should be meaningful and few — avoid warning fatigue.
 
-## 8. Scalability by Design
+## 10. Scalability by Design
 
 The language must support building large applications without the design falling apart at
 scale.
@@ -96,7 +121,7 @@ scale.
 - The type system should catch errors at compile time that would otherwise surface only in
   large codebases (e.g., interface mismatches, missing exhaustive handling).
 
-## 9. Target-Independent Semantics
+## 11. Target-Independent Semantics
 
 ACOPL's semantics must not depend on or expose any particular compilation target. The
 language should feel self-contained — agents write ACOPL, and the toolchain handles the
@@ -110,7 +135,7 @@ rest.
 - This enables multiple backends (TypeScript, Rust, Zig, WASM, etc.) without
   language-level changes.
 
-## 10. Minimal Core, Extensible Library
+## 12. Minimal Core, Extensible Library
 
 Keep the language core small and well-defined. Push functionality into standard libraries
 rather than language syntax.
