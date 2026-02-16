@@ -1,0 +1,20 @@
+{
+  "name": "aopl",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "bin": {
+    "aopl": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "node src/cli.ts",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5.8"
+  }
+}
