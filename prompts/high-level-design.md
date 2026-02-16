@@ -1,13 +1,13 @@
-# ACOPL High-Level Design
+# HAL High-Level Design
 
-This document is an exploratory sketch of ACOPL — how the language looks, what features it
+This document is an exploratory sketch of HAL — how the language looks, what features it
 has, and how the pieces fit together. It is guided by the
 [design principles](design-principles.md) and intended to inform the formal language
 specification that follows.
 
 ## Overview
 
-ACOPL is a **high-level**, statically typed language optimized for coding agents. It
+HAL is a **high-level**, statically typed language optimized for coding agents. It
 compiles to target languages (initially TypeScript) but its semantics are
 target-independent. Agents write business logic, data models, contracts, and effects — the
 transpiler handles all low-level concerns (memory management, async mechanics, concurrency
@@ -250,14 +250,14 @@ Each file is a module. The directory structure defines the module hierarchy:
 
 ```
 src/
-  main.acopl              // module: main
+  main.hal              // module: main
   auth/
-    mod.acopl             // module: auth
-    password.acopl        // module: auth.password
-    token.acopl           // module: auth.token
+    mod.hal             // module: auth
+    password.hal        // module: auth.password
+    token.hal           // module: auth.token
   http/
-    mod.acopl             // module: http
-    router.acopl          // module: http.router
+    mod.hal             // module: http
+    router.hal          // module: http.router
 ```
 
 ### Visibility
@@ -286,13 +286,13 @@ the built-in types.
 
 ### Interface Files
 
-Each module can have a separate interface file (`.acopli`) that declares its public API
+Each module can have a separate interface file (`.hali`) that declares its public API
 without implementation details. This supports principle 10 (Scalability by Design) —
 agents can read the interface to understand a module without loading the full
 implementation.
 
 ```
-// auth/password.acopli
+// auth/password.hali
 pub fn hash(password: String) -> String
   effects [Crypto.Hash]
 
@@ -379,7 +379,7 @@ to `fs.readFile` (TypeScript), `std::fs::read` (Rust), etc.
 
 ## FFI (Foreign Function Interface)
 
-FFI is the explicit boundary between ACOPL and the target platform. It is the **only**
+FFI is the explicit boundary between HAL and the target platform. It is the **only**
 place where target-specific details appear:
 
 ```
@@ -389,19 +389,19 @@ ffi "typescript" {
 }
 ```
 
-FFI declarations are isolated in dedicated modules. Regular ACOPL code never sees the
+FFI declarations are isolated in dedicated modules. Regular HAL code never sees the
 target platform.
 
 ## Project Structure
 
-A canonical project layout that all ACOPL projects follow:
+A canonical project layout that all HAL projects follow:
 
 ```
 project-name/
-  acopl.toml              // project manifest (dependencies, targets, metadata)
+  hal.toml              // project manifest (dependencies, targets, metadata)
   src/
-    main.acopl            // entry point
-    lib.acopl             // library root (for library projects)
+    main.hal            // entry point
+    lib.hal             // library root (for library projects)
     ...                   // application modules
   tests/
     ...                   // test modules (mirror src/ structure)
@@ -411,10 +411,10 @@ project-name/
 
 ## Toolchain
 
-The ACOPL toolchain is a single binary that includes:
+The HAL toolchain is a single binary that includes:
 
-- **Compiler** — compiles ACOPL to the target (initially TypeScript).
-- **Formatter** — canonical formatting, not optional. All ACOPL code looks the same.
+- **Compiler** — compiles HAL to the target (initially TypeScript).
+- **Formatter** — canonical formatting, not optional. All HAL code looks the same.
 - **Linter** — catches common mistakes and enforces idioms.
 - **Test runner** — runs tests with contract verification.
 - **Package manager** — dependency management.

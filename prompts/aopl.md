@@ -1,5 +1,5 @@
-Let's build a programming language designed specifically for coding agents. The purpose of
-this language is:
+Let's build **HAL** (High-level Agentic coding Language) — a programming language designed
+specifically for coding agents. The purpose of this language is:
 
 - To make agentic coding as reliable, accurate and productive as possible for coding
   agents.
@@ -20,13 +20,13 @@ review and provide feedback.
    programming language would look like, how you would design it and what features would
    you give it.
 
-3. Let's decide on a catchy name for it. For now, we will call it ACOPL: agentic coding
-   oriented programming language.
+3. ~~Let's decide on a catchy name for it.~~ **Done.** The language is called **HAL**
+   (High-level Agentic coding Language). File extension: `.hal`. Interface files: `.hali`.
 
 4. Create a complete language specification document in `prompts/language-spec.md`.
 
 5. Create a `prompts/plan.md` document with a multi-step plan to implement a "compiler"
-   from ACOPL to TypeScript. Let's choose TypeScript initially because it is very
+   from HAL to TypeScript. Let's choose TypeScript initially because it is very
    portable, can run on the web, and has a very large ecosystem / package support.
    - The plan should have multiple incremental phases, implementing different aspects of
      the language. Each phase will have a list of tasks marked using the markdown [ ] /
@@ -46,13 +46,13 @@ review and provide feedback.
 7. Implement a REPL or incremental compilation mode, so agents can test snippets quickly
    and work iteratively, which matches how agentic coding typically operates.
 
-8. At a certain point, we will decide that the ACOPL to TypeScript compiler is mature
+8. At a certain point, we will decide that the HAL to TypeScript compiler is mature
    enough to be self-hosted, i.e., written in its own programming language. Thus, version
-   2 of this ACOPL to typescript compiler will be implemented in ACOPL, which will be a
+   2 of this HAL to typescript compiler will be implemented in HAL, which will be a
    great way to test the language design. We will then evaluate any issues and potential
    improvements of the language and update its documentation and design if necessary, then
    implement them.
 
-9. Implement a Language Server Protocol (LSP) server for ACOPL, enabling code intelligence
+9. Implement a Language Server Protocol (LSP) server for HAL, enabling code intelligence
    (autocomplete, go-to-definition, diagnostics) in editors and for agents that leverage
    LSP.

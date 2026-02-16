@@ -1,6 +1,6 @@
-# ACOPL Design Principles
+# HAL Design Principles
 
-These principles guide all design decisions for ACOPL. They capture what makes code easy
+These principles guide all design decisions for HAL. They capture what makes code easy
 for coding agents to reliably generate, understand, and manipulate — while remaining
 readable and reviewable by humans.
 
@@ -94,7 +94,7 @@ Agents work best when code follows predictable patterns. The language should enc
 enforce) consistent project structure.
 
 - A standard module system with a clear, consistent file-to-module mapping.
-- A canonical code formatter built into the toolchain (not optional) — all ACOPL code
+- A canonical code formatter built into the toolchain (not optional) — all HAL code
   looks the same.
 - A standard project layout convention so agents always know where to find things.
 
@@ -123,8 +123,8 @@ scale.
 
 ## 11. Target-Independent Semantics
 
-ACOPL's semantics must not depend on or expose any particular compilation target. The
-language should feel self-contained — agents write ACOPL, and the toolchain handles the
+HAL's semantics must not depend on or expose any particular compilation target. The
+language should feel self-contained — agents write HAL, and the toolchain handles the
 rest.
 
 - No target-specific constructs or escape hatches in the language itself.
