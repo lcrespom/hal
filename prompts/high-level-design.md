@@ -7,10 +7,27 @@ specification that follows.
 
 ## Overview
 
-ACOPL is a statically typed, compiled language optimized for coding agents. It compiles to
-target languages (initially TypeScript) but its semantics are target-independent. The
-language prioritizes regularity, explicitness, and machine-verifiable correctness over
-brevity or cleverness.
+ACOPL is a **high-level**, statically typed language optimized for coding agents. It
+compiles to target languages (initially TypeScript) but its semantics are
+target-independent. Agents write business logic, data models, contracts, and effects — the
+transpiler handles all low-level concerns (memory management, async mechanics, concurrency
+primitives, platform APIs).
+
+The language should feel closer to a **typed, contract-rich specification language** than
+to a systems language. If something can be decided by the transpiler, it should not be in
+the language.
+
+## Design Philosophy: What the Language Controls vs. What the Transpiler Controls
+
+| Concern            | Language (agent writes)                     | Transpiler (decides automatically)       |
+| ------------------ | ------------------------------------------- | ---------------------------------------- |
+| Data shapes        | Structs, enums, types                       | Memory layout, allocation strategy       |
+| Mutability         | `let` vs `let mut`                          | GC, reference counting, ownership        |
+| Error flow         | `Result<T, E>`, `?` operator                | Exception translation, stack unwinding   |
+| Side effects       | `effects [...]`, `forbids [...]`            | Async/await, promises, callbacks         |
+| Concurrency intent | `concurrent { ... }`                        | Thread pools, event loops, green threads |
+| I/O operations     | Abstract capabilities (FileSystem, Network) | Platform-specific APIs                   |
+| Data access        | Abstract Database operations                | Connection pooling, driver selection     |
 
 ## Type System
 
@@ -18,7 +35,7 @@ brevity or cleverness.
 
 A small set of primitive types:
 
-```rust
+```
 Int, Float, Bool, String, Char, Void, Never
 ```
 
@@ -27,18 +44,20 @@ Int, Float, Bool, String, Char, Void, Never
 - **Struct** — product types with named fields.
 - **Enum** — sum types (tagged unions) with optional associated data.
 - **Tuple** — anonymous product types for lightweight grouping.
-- **Array\<T\>** — ordered, fixed-size collections.
-- **List\<T\>** — ordered, growable collections.
+- **List\<T\>** — ordered collections.
 - **Map\<K, V\>** — key-value collections.
 - **Set\<T\>** — unique-value collections.
 - **Optional\<T\>** — explicit nullability (no null/nil in the language).
 - **Result\<T, E\>** — explicit error handling (no exceptions).
 
+No distinction between fixed-size arrays and growable lists — the transpiler optimizes
+based on usage. The agent just works with `List<T>`.
+
 ### Generics
 
 Types and functions can be parameterized:
 
-```rust
+```
 struct Stack<T> {
   items: List<T>
 }
@@ -51,13 +70,15 @@ fn pop<T>(stack: mut Stack<T>) -> Optional<T> { ... }
 Traits define shared behavior. Types implement traits explicitly — no implicit structural
 typing.
 
-```rust
-trait Printable {
-  fn to_string(self) -> String
+```
+trait Serializable {
+  fn serialize(self) -> String
+  fn deserialize(data: String) -> Result<Self, SerializeError>
 }
 
-impl Printable for User {
-  fn to_string(self) -> String { ... }
+impl Serializable for User {
+  fn serialize(self) -> String { ... }
+  fn deserialize(data: String) -> Result<User, SerializeError> { ... }
 }
 ```
 
@@ -67,7 +88,7 @@ impl Printable for User {
 
 All declarations follow a consistent pattern: `keyword name: Type = value`.
 
-```rust
+```
 let count: Int = 0           // immutable binding
 let mut total: Int = 0       // mutable binding (explicit opt-in)
 const MAX_SIZE: Int = 1024   // compile-time constant
@@ -77,7 +98,7 @@ const MAX_SIZE: Int = 1024   // compile-time constant
 
 Functions declare their signature, contracts, and effects up front:
 
-```rust
+```
 fn divide(numerator: Float, denominator: Float) -> Result<Float, MathError>
   precondition { denominator != 0.0 }
   postcondition(result) { result.is_ok() implies result.unwrap() * denominator == numerator }
@@ -91,7 +112,7 @@ fn divide(numerator: Float, denominator: Float) -> Result<Float, MathError>
 
 Functions are pure by default. Side effects require explicit declaration:
 
-```rust
+```
 fn save_user(user: User) -> Result<Void, DbError>
   effects [Database.Write]
 {
@@ -101,7 +122,7 @@ fn save_user(user: User) -> Result<Void, DbError>
 
 The `forbids` clause provides negative guarantees:
 
-```rust
+```
 fn compute_total(items: List<Item>) -> Float
   forbids [Network, Database]
 {
@@ -114,7 +135,7 @@ fn compute_total(items: List<Item>) -> Float
 
 Standard, predictable control flow — no surprises:
 
-```rust
+```
 // Conditional
 if condition {
   // ...
@@ -147,7 +168,7 @@ while condition {
 
 No exceptions. All errors flow through `Result<T, E>`:
 
-```rust
+```
 fn read_config(path: String) -> Result<Config, ConfigError>
   effects [FileSystem.Read]
 {
@@ -162,7 +183,7 @@ unchecked exceptions, no panics in normal code.
 
 ### Structs and Enums
 
-```rust
+```
 struct User {
   name: String
   email: String
@@ -178,13 +199,56 @@ enum Shape {
 }
 ```
 
+## Testing
+
+Tests are a first-class language construct, not a library convention. This ensures agents
+always know exactly how to write and discover tests — no framework choice, no
+configuration, no ambiguity.
+
+```
+test "division by zero returns error" {
+  let result = divide(10.0, 0.0)
+  assert result.is_err()
+  assert result.unwrap_err() == MathError.DivisionByZero
+}
+
+test "division returns correct result" {
+  let result = divide(10.0, 2.0)
+  assert result.is_ok()
+  assert result.unwrap() == 5.0
+}
+```
+
+Tests can be grouped into test modules for organization:
+
+```
+test module "User validation" {
+  test "rejects negative age" {
+    let result = User.new("Alice", "alice@example.com", -1)
+    assert result.is_err()
+  }
+
+  test "accepts valid user" {
+    let result = User.new("Alice", "alice@example.com", 30)
+    assert result.is_ok()
+  }
+}
+```
+
+Key properties:
+
+- Tests live alongside the code they test (in the same file or in the `tests/` directory).
+- The compiler can verify contracts automatically — generating test cases from
+  `precondition`, `postcondition`, and `invariant` declarations.
+- Test output is structured (JSON), so agents can parse results programmatically.
+
 ## Module System
 
 ### File-to-Module Mapping
 
 Each file is a module. The directory structure defines the module hierarchy:
 
-```rust
+```
 src/
   main.acopl              // module: main
   auth/
@@ -201,7 +265,7 @@ src/
 All declarations are private by default. The `pub` keyword makes them part of the module's
 public API:
 
-```rust
+```
 pub struct User { ... }        // public type
 pub fn create_user() { ... }   // public function
 fn helper() { ... }            // private, module-internal
@@ -211,7 +275,7 @@ fn helper() { ... }            // private, module-internal
 
 Explicit, unambiguous imports:
 
-```rust
+```
 import auth.password.{ hash, verify }
 import http.router.Router
 import collections.List
@@ -227,7 +291,7 @@ without implementation details. This supports principle 10 (Scalability by Desig
 agents can read the interface to understand a module without loading the full
 implementation.
 
-```rust
+```
 // auth/password.acopli
 pub fn hash(password: String) -> String
   effects [Crypto.Hash]
@@ -240,7 +304,7 @@ pub fn verify(password: String, hash: String) -> Bool
 
 Effects are declared as a hierarchy, enabling fine-grained control:
 
-```rust
+```
 effect FileSystem {
   Read
   Write
@@ -263,68 +327,76 @@ Effects propagate: if function A calls function B which has `effects [Database.W
 then A must also declare `Database.Write` (or a parent effect that includes it) unless A
 explicitly handles or contains the effect.
 
+The effect system also drives transpiler decisions. A function with `effects [Network]`
+will be compiled to async code on targets that require it (e.g., TypeScript) — but the
+agent never writes `async` or `await`. The transpiler infers this from the declared
+effects.
+
 ## Concurrency
 
-Concurrency is built around message passing and structured concurrency — no shared mutable
-state across concurrent boundaries.
+Agents express **concurrency intent**, not concurrency mechanics:
 
-```rust
+```
 fn fetch_user_data(user_id: String) -> Result<UserData, Error>
   effects [Network.Internal]
 {
-  // Structured concurrency: child tasks are scoped to parent
+  // "These two operations are independent — run them concurrently"
   let (profile, orders) = concurrent {
-    task { fetch_profile(user_id) }
-    task { fetch_orders(user_id) }
+    fetch_profile(user_id)
+    fetch_orders(user_id)
   }
 
   return Result.ok(UserData.new(profile?, orders?))
 }
 ```
 
-Key properties:
+The agent says _what_ is independent. The transpiler decides _how_:
 
-- No data races by construction — concurrent tasks cannot share mutable references.
-- Structured concurrency ensures tasks do not outlive their parent scope.
-- Channels for explicit communication between concurrent tasks.
+- TypeScript backend: `Promise.all`
+- Rust backend: `tokio::join!`
+- Other backends: whatever is idiomatic
+
+There are no threads, no channels, no mutexes, no atomics in the language. If a future
+backend needs fine-grained concurrency control, that goes in FFI.
 
 ## Standard Library Capabilities
 
-The standard library provides abstract capabilities that the backend maps to the target
-platform:
+The standard library provides **abstract capabilities** — high-level operations that
+agents use without caring about platform details:
 
-- **FileSystem** — file I/O operations
-- **Network** — HTTP client/server, TCP/UDP sockets
-- **Database** — connection pools, queries, transactions
+- **FileSystem** — read, write, delete files and directories
+- **Network** — HTTP client/server, request/response
+- **Database** — queries, transactions, migrations
 - **Crypto** — hashing, encryption, signing
-- **Time** — clocks, timers, durations
+- **Time** — current time, durations, scheduling
 - **Collections** — List, Map, Set, Queue, Stack, etc.
 - **Text** — string manipulation, regex, formatting
 - **Serialization** — JSON, XML, binary formats
-- **Logging** — structured logging
+- **Logging** — structured logging with levels
 
-These are all abstract — the compiler backend provides the concrete implementations for
-each target.
+These are all abstract. The agent writes `FileSystem.read(path)` — the transpiler maps it
+to `fs.readFile` (TypeScript), `std::fs::read` (Rust), etc.
 
 ## FFI (Foreign Function Interface)
 
-FFI is the explicit boundary between ACOPL and the target platform:
+FFI is the explicit boundary between ACOPL and the target platform. It is the **only**
+place where target-specific details appear:
 
-```rust
+```
 ffi "typescript" {
-  fn fetch(url: String, options: FetchOptions) -> Promise<Response>
+  fn fetch(url: String, options: FetchOptions) -> Response
     maps_to "globalThis.fetch"
 }
 ```
 
-FFI declarations are isolated in dedicated modules and are the only place where
-target-specific details appear. This keeps the rest of the codebase target-independent.
+FFI declarations are isolated in dedicated modules. Regular ACOPL code never sees the
+target platform.
 
 ## Project Structure
 
 A canonical project layout that all ACOPL projects follow:
 
-```rust
+```
 project-name/
   acopl.toml              // project manifest (dependencies, targets, metadata)
   src/
@@ -364,31 +436,25 @@ Deliberately excluded features, and why:
   considered later (principle 2).
 - **Global mutable state** — by design (principle 7).
 - **Decorators/annotations that alter behavior** — no action at a distance (principle 6).
+- **Memory management primitives** — no ownership, borrowing, lifetimes, or manual memory
+  control. The transpiler handles this entirely based on the target.
+- **Async/await keywords** — the effect system tells the transpiler what's async. Agents
+  never write async code explicitly.
+- **Threads, mutexes, channels, atomics** — agents express concurrency intent with
+  `concurrent { ... }`. The transpiler maps to the target's concurrency model.
 
 ## Open Questions
 
 These need resolution during the language specification phase:
 
-1. **Ownership vs. garbage collection** — Ownership (like Rust) gives more control but
-   adds cognitive load for agents. GC is simpler but less predictable. A middle ground
-   (e.g., region-based memory, or GC with opt-in ownership for performance-critical code)
-   may be ideal.
-
-2. **Async model** — Should async be explicit (async/await keywords) or implicit (all I/O
-   is automatically async via the effect system)? The effect system may make async
-   transparent.
-
-3. **Macro system** — Should there be one at all? If so, hygienic and heavily restricted
+1. **Macro system** — Should there be one at all? If so, hygienic and heavily restricted
    to preserve uniform syntax.
 
-4. **Metaprogramming** — Compile-time code generation vs. none. If included, it must not
+2. **Metaprogramming** — Compile-time code generation vs. none. If included, it must not
    break predictability.
 
-5. **String interpolation syntax** — Needs to be unambiguous. Something like
+3. **String interpolation syntax** — Needs to be unambiguous. Something like
    `"Hello, {name}"` or `"Hello, ${name}"`.
 
-6. **Trait-level effects** — Can traits declare that their methods have certain effects?
+4. **Trait-level effects** — Can traits declare that their methods have certain effects?
    E.g., a `Serializable` trait might require `effects [Serialization]` on its methods.
-
-7. **Testing as a language feature** — Should test declarations be a first-class construct
-   (`test "description" { ... }`) rather than a library convention?
