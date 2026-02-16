@@ -252,7 +252,7 @@ control flow constructs.
 
 ### Tasks
 
-- [ ] Define AST nodes:
+- [x] Define AST nodes:
   - `FnDecl` (pub, name, generic params, params, return type, contracts, effects, forbids,
     body)
   - `Param` (mut flag, name, type)
@@ -275,51 +275,51 @@ control flow constructs.
   - `WhileLoop` (condition, body)
   - `BreakStmt`, `ContinueStmt`
   - `ConcurrentBlock` (expressions)
-- [ ] Implement function declaration parsing (full signature with contracts and effects)
-- [ ] Implement closure parsing: `fn(x: Int) -> Int { x + 1 }`
-- [ ] Implement function call parsing (positional and named arguments)
-- [ ] Implement postfix operator parsing (`.field`, `.method()`, `[index]`, `?`)
-- [ ] Implement `if` / `else if` / `else` (both statement and expression forms)
-- [ ] Implement `match` with pattern arms (`case Pattern => ...`)
-- [ ] Implement pattern parsing (literal, wildcard `_`, binding, enum, struct)
-- [ ] Implement `for` loop (including tuple destructuring pattern)
-- [ ] Implement `while` loop
-- [ ] Implement `break` and `continue`
-- [ ] Implement `return` statement
-- [ ] Implement `concurrent { ... }` block
-- [ ] Produce structured parse errors for malformed control flow
+- [x] Implement function declaration parsing (full signature with contracts and effects)
+- [x] Implement closure parsing: `fn(x: Int) -> Int { x + 1 }`
+- [x] Implement function call parsing (positional and named arguments)
+- [x] Implement postfix operator parsing (`.field`, `.method()`, `[index]`, `?`)
+- [x] Implement `if` / `else if` / `else` (both statement and expression forms)
+- [x] Implement `match` with pattern arms (`case Pattern => ...`)
+- [x] Implement pattern parsing (literal, wildcard `_`, binding, enum, struct)
+- [x] Implement `for` loop (including tuple destructuring pattern)
+- [x] Implement `while` loop
+- [x] Implement `break` and `continue`
+- [x] Implement `return` statement
+- [x] Implement `concurrent { ... }` block
+- [x] Produce structured parse errors for malformed control flow
 
 ### Tests (write first)
 
-- [ ] Test: `fn add(a: Int, b: Int) -> Int { return a + b }` → `FnDecl`
-- [ ] Test: function with precondition and postcondition
-- [ ] Test: function with effects clause
-- [ ] Test: function with forbids clause
-- [ ] Test: function with effects + forbids + contracts combined
-- [ ] Test: `pub fn` → public function
-- [ ] Test: closure `fn(x) { x + 1 }`
-- [ ] Test: function call `add(1, 2)`
-- [ ] Test: named arguments `create(name: "Alice", age: 30)`
-- [ ] Test: method call `list.push(item)`
-- [ ] Test: chained calls `a.b().c(d)`
-- [ ] Test: field access `user.name`
-- [ ] Test: index access `list[0]`
-- [ ] Test: error propagation `result?`
-- [ ] Test: `if x > 0 { ... }` → `IfStmt`
-- [ ] Test: `if x > 0 { ... } else { ... }` → with else
-- [ ] Test: `if` as expression (with else, produces value)
-- [ ] Test: `match x { case 1 => ... case _ => ... }` → `MatchStmt`
-- [ ] Test: match with enum patterns
-- [ ] Test: match with struct patterns
-- [ ] Test: match with guard: `case x if x > 0 => ...`
-- [ ] Test: `for item in list { ... }` → `ForLoop`
-- [ ] Test: `for (key, value) in map { ... }` → tuple destructuring
-- [ ] Test: `while condition { ... }` → `WhileLoop`
-- [ ] Test: `break` and `continue`
-- [ ] Test: `return value`
-- [ ] Test: `concurrent { a(); b() }` → `ConcurrentBlock`
-- [ ] Test: missing function body → structured error
-- [ ] Test: missing `=>` in match arm → structured error
+- [x] Test: `fn add(a: Int, b: Int) -> Int { return a + b }` → `FnDecl`
+- [x] Test: function with precondition and postcondition
+- [x] Test: function with effects clause
+- [x] Test: function with forbids clause
+- [x] Test: function with effects + forbids + contracts combined
+- [x] Test: `pub fn` → public function
+- [x] Test: closure `fn(x) { x + 1 }`
+- [x] Test: function call `add(1, 2)`
+- [x] Test: named arguments `create(name: "Alice", age: 30)`
+- [x] Test: method call `list.push(item)`
+- [x] Test: chained calls `a.b().c(d)`
+- [x] Test: field access `user.name`
+- [x] Test: index access `list[0]`
+- [x] Test: error propagation `result?`
+- [x] Test: `if x > 0 { ... }` → `IfStmt`
+- [x] Test: `if x > 0 { ... } else { ... }` → with else
+- [x] Test: `if` as expression (with else, produces value)
+- [x] Test: `match x { case 1 => ... case _ => ... }` → `MatchStmt`
+- [x] Test: match with enum patterns
+- [x] Test: match with struct patterns
+- [x] Test: match with guard: `case x if x > 0 => ...`
+- [x] Test: `for item in list { ... }` → `ForLoop`
+- [x] Test: `for (key, value) in map { ... }` → tuple destructuring
+- [x] Test: `while condition { ... }` → `WhileLoop`
+- [x] Test: `break` and `continue`
+- [x] Test: `return value`
+- [x] Test: `concurrent { a(); b() }` → `ConcurrentBlock`
+- [x] Test: missing function body → structured error
+- [x] Test: missing `=>` in match arm → structured error
 
 ### Deliverable
 

@@ -96,7 +96,118 @@ export interface BlockExpr extends BaseNode {
   readonly trailing?: Expr
 }
 
-/** All expression node types. */
+// ─── Phase 4: Function & Control Flow Expressions ────────────────
+
+export interface FnCall extends BaseNode {
+  readonly kind: 'FnCall'
+  readonly callee: Expr
+  readonly args: readonly CallArg[]
+}
+
+export interface CallArg {
+  readonly name?: string
+  readonly value: Expr
+}
+
+export interface MethodCall extends BaseNode {
+  readonly kind: 'MethodCall'
+  readonly receiver: Expr
+  readonly method: string
+  readonly args: readonly CallArg[]
+}
+
+export interface FieldAccess extends BaseNode {
+  readonly kind: 'FieldAccess'
+  readonly receiver: Expr
+  readonly field: string
+}
+
+export interface IndexAccess extends BaseNode {
+  readonly kind: 'IndexAccess'
+  readonly receiver: Expr
+  readonly index: Expr
+}
+
+export interface ErrorPropagation extends BaseNode {
+  readonly kind: 'ErrorPropagation'
+  readonly expr: Expr
+}
+
+export interface ClosureLiteral extends BaseNode {
+  readonly kind: 'ClosureLiteral'
+  readonly params: readonly Param[]
+  readonly returnType?: string
+  readonly body: Expr
+}
+
+export interface IfExpr extends BaseNode {
+  readonly kind: 'IfExpr'
+  readonly condition: Expr
+  readonly then: Expr
+  readonly elseIfs: readonly { condition: Expr; body: Expr }[]
+  readonly elseBody?: Expr
+}
+
+export interface MatchExpr extends BaseNode {
+  readonly kind: 'MatchExpr'
+  readonly subject: Expr
+  readonly arms: readonly MatchArm[]
+}
+
+export interface MatchArm {
+  readonly pattern: Pattern
+  readonly guard?: Expr
+  readonly body: Expr
+}
+
+export interface ConcurrentBlock extends BaseNode {
+  readonly kind: 'ConcurrentBlock'
+  readonly exprs: readonly Expr[]
+}
+
+// ─── Patterns ────────────────────────────────────────────────────
+
+export interface LiteralPattern extends BaseNode {
+  readonly kind: 'LiteralPattern'
+  readonly value: Expr
+}
+
+export interface WildcardPattern extends BaseNode {
+  readonly kind: 'WildcardPattern'
+}
+
+export interface BindingPattern extends BaseNode {
+  readonly kind: 'BindingPattern'
+  readonly name: string
+}
+
+export interface EnumPattern extends BaseNode {
+  readonly kind: 'EnumPattern'
+  readonly name: string
+  readonly variant: string
+  readonly fields: readonly PatternField[]
+}
+
+export interface PatternField {
+  readonly name: string
+  readonly pattern?: Pattern
+}
+
+export interface StructPattern extends BaseNode {
+  readonly kind: 'StructPattern'
+  readonly name: string
+  readonly fields: readonly PatternField[]
+}
+
+export type Pattern =
+  | LiteralPattern
+  | WildcardPattern
+  | BindingPattern
+  | EnumPattern
+  | StructPattern
+
+// ─── All expression node types ───────────────────────────────────
+
 export type Expr =
   | IntLiteral
   | FloatLiteral
@@ -112,6 +223,15 @@ export type Expr =
   | SetLiteral
   | StructLiteral
   | BlockExpr
+  | FnCall
+  | MethodCall
+  | FieldAccess
+  | IndexAccess
+  | ErrorPropagation
+  | ClosureLiteral
+  | IfExpr
+  | MatchExpr
+  | ConcurrentBlock
 
 // ─── Statements ──────────────────────────────────────────────────
 
@@ -141,8 +261,65 @@ export interface ExprStatement extends BaseNode {
   readonly expr: Expr
 }
 
+// ─── Phase 4: Function & Control Flow Statements ─────────────────
+
+export interface Param {
+  readonly mutable: boolean
+  readonly name: string
+  readonly type?: string
+}
+
+export interface FnDecl extends BaseNode {
+  readonly kind: 'FnDecl'
+  readonly pub: boolean
+  readonly name: string
+  readonly params: readonly Param[]
+  readonly returnType?: string
+  readonly effects?: readonly string[]
+  readonly forbids?: readonly string[]
+  readonly preconditions: readonly Expr[]
+  readonly postconditions: readonly { name?: string; body: Expr }[]
+  readonly body: Expr
+}
+
+export interface ReturnStmt extends BaseNode {
+  readonly kind: 'ReturnStmt'
+  readonly value?: Expr
+}
+
+export interface ForLoop extends BaseNode {
+  readonly kind: 'ForLoop'
+  readonly pattern: string | readonly string[]
+  readonly iterable: Expr
+  readonly body: Expr
+}
+
+export interface WhileLoop extends BaseNode {
+  readonly kind: 'WhileLoop'
+  readonly condition: Expr
+  readonly body: Expr
+}
+
+export interface BreakStmt extends BaseNode {
+  readonly kind: 'BreakStmt'
+}
+
+export interface ContinueStmt extends BaseNode {
+  readonly kind: 'ContinueStmt'
+}
+
 /** All statement node types. */
-export type Stmt = LetDecl | ConstDecl | Assignment | ExprStatement
+export type Stmt =
+  | LetDecl
+  | ConstDecl
+  | Assignment
+  | ExprStatement
+  | FnDecl
+  | ReturnStmt
+  | ForLoop
+  | WhileLoop
+  | BreakStmt
+  | ContinueStmt
 
 /** Result of parsing: a list of statements. */
 export interface ParseResult {

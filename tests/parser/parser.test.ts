@@ -23,6 +23,21 @@ import type {
   Assignment,
   ExprStatement,
   ParseResult,
+  FnDecl,
+  FnCall,
+  MethodCall,
+  FieldAccess,
+  IndexAccess,
+  ErrorPropagation,
+  ClosureLiteral,
+  IfExpr,
+  MatchExpr,
+  ConcurrentBlock,
+  ReturnStmt,
+  ForLoop,
+  WhileLoop,
+  BreakStmt,
+  ContinueStmt,
 } from '../../src/parser/index.ts'
 
 /** Helper: lex then parse a string. */
@@ -456,6 +471,323 @@ describe('Parser', () => {
       expect(expr.span.start.column).toBe(1)
       // Span should extend to the end of '2'
       expect(expr.span.end.column).toBeGreaterThan(1)
+    })
+  })
+
+  // ═══════════════════════════════════════════════════════════════
+  // Phase 4: Functions & Control Flow
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Function declarations ────────────────────────────────
+
+  describe('function declarations', () => {
+    it('parses fn add(a: Int, b: Int) -> Int { return a + b }', () => {
+      const stmt = parseStmt('fn add(a: Int, b: Int) -> Int { return a + b }') as FnDecl
+      expect(stmt.kind).toBe('FnDecl')
+      expect(stmt.pub).toBe(false)
+      expect(stmt.name).toBe('add')
+      expect(stmt.params).toHaveLength(2)
+      expect(stmt.params[0].name).toBe('a')
+      expect(stmt.params[0].type).toBe('Int')
+      expect(stmt.params[1].name).toBe('b')
+      expect(stmt.params[1].type).toBe('Int')
+      expect(stmt.returnType).toBe('Int')
+    })
+
+    it('parses function with precondition and postcondition', () => {
+      const input = `fn divide(a: Int, b: Int) -> Int
+        precondition { b != 0 }
+        postcondition(result) { result * b == a }
+        { return a / b }`
+      const stmt = parseStmt(input) as FnDecl
+      expect(stmt.kind).toBe('FnDecl')
+      expect(stmt.preconditions).toHaveLength(1)
+      expect(stmt.postconditions).toHaveLength(1)
+      expect(stmt.postconditions[0].name).toBe('result')
+    })
+
+    it('parses function with effects clause', () => {
+      const input = 'fn read_file(path: String) -> String effects [Io] { return path }'
+      const stmt = parseStmt(input) as FnDecl
+      expect(stmt.effects).toEqual(['Io'])
+    })
+
+    it('parses function with forbids clause', () => {
+      const input = 'fn pure_fn(x: Int) -> Int forbids [Network] { return x }'
+      const stmt = parseStmt(input) as FnDecl
+      expect(stmt.forbids).toEqual(['Network'])
+    })
+
+    it('parses function with effects + forbids + contracts', () => {
+      const input = `fn process(x: Int) -> Int
+        effects [Io]
+        forbids [Network]
+        precondition { x > 0 }
+        postcondition(r) { r > 0 }
+        { return x }`
+      const stmt = parseStmt(input) as FnDecl
+      expect(stmt.effects).toEqual(['Io'])
+      expect(stmt.forbids).toEqual(['Network'])
+      expect(stmt.preconditions).toHaveLength(1)
+      expect(stmt.postconditions).toHaveLength(1)
+    })
+
+    it('parses pub fn', () => {
+      const stmt = parseStmt('pub fn greet() { return 1 }') as FnDecl
+      expect(stmt.kind).toBe('FnDecl')
+      expect(stmt.pub).toBe(true)
+      expect(stmt.name).toBe('greet')
+    })
+  })
+
+  // ─── Closures ─────────────────────────────────────────────
+
+  describe('closures', () => {
+    it('parses closure fn(x) { x + 1 }', () => {
+      const expr = parseExpr('fn(x) { x + 1 }') as ClosureLiteral
+      expect(expr.kind).toBe('ClosureLiteral')
+      expect(expr.params).toHaveLength(1)
+      expect(expr.params[0].name).toBe('x')
+      expect(expr.body.kind).toBe('BlockExpr')
+    })
+
+    it('parses closure with typed params and return type', () => {
+      const expr = parseExpr('fn(x: Int) -> Int { x + 1 }') as ClosureLiteral
+      expect(expr.params[0].type).toBe('Int')
+      expect(expr.returnType).toBe('Int')
+    })
+  })
+
+  // ─── Function calls ──────────────────────────────────────
+
+  describe('function calls', () => {
+    it('parses add(1, 2)', () => {
+      const expr = parseExpr('add(1, 2)') as FnCall
+      expect(expr.kind).toBe('FnCall')
+      expect((expr.callee as Identifier).name).toBe('add')
+      expect(expr.args).toHaveLength(2)
+      expect((expr.args[0].value as IntLiteral).value).toBe(1)
+      expect((expr.args[1].value as IntLiteral).value).toBe(2)
+    })
+
+    it('parses named arguments create(name: "Alice", age: 30)', () => {
+      const expr = parseExpr('create(name: "Alice", age: 30)') as FnCall
+      expect(expr.kind).toBe('FnCall')
+      expect(expr.args).toHaveLength(2)
+      expect(expr.args[0].name).toBe('name')
+      expect((expr.args[0].value as StringLiteral).value).toBe('Alice')
+      expect(expr.args[1].name).toBe('age')
+      expect((expr.args[1].value as IntLiteral).value).toBe(30)
+    })
+  })
+
+  // ─── Method calls & field access ──────────────────────────
+
+  describe('method calls and field access', () => {
+    it('parses method call list.push(item)', () => {
+      const expr = parseExpr('list.push(item)') as MethodCall
+      expect(expr.kind).toBe('MethodCall')
+      expect((expr.receiver as Identifier).name).toBe('list')
+      expect(expr.method).toBe('push')
+      expect(expr.args).toHaveLength(1)
+    })
+
+    it('parses chained calls a.b().c(d)', () => {
+      const expr = parseExpr('a.b().c(d)') as MethodCall
+      expect(expr.kind).toBe('MethodCall')
+      expect(expr.method).toBe('c')
+      // The receiver should be a.b() which is a MethodCall
+      const inner = expr.receiver as MethodCall
+      expect(inner.kind).toBe('MethodCall')
+      expect(inner.method).toBe('b')
+      expect((inner.receiver as Identifier).name).toBe('a')
+    })
+
+    it('parses field access user.name', () => {
+      const expr = parseExpr('user.name') as FieldAccess
+      expect(expr.kind).toBe('FieldAccess')
+      expect((expr.receiver as Identifier).name).toBe('user')
+      expect(expr.field).toBe('name')
+    })
+  })
+
+  // ─── Index access ─────────────────────────────────────────
+
+  describe('index access', () => {
+    it('parses list[0]', () => {
+      const expr = parseExpr('list[0]') as IndexAccess
+      expect(expr.kind).toBe('IndexAccess')
+      expect((expr.receiver as Identifier).name).toBe('list')
+      expect((expr.index as IntLiteral).value).toBe(0)
+    })
+  })
+
+  // ─── Error propagation ────────────────────────────────────
+
+  describe('error propagation', () => {
+    it('parses result?', () => {
+      const expr = parseExpr('result?') as ErrorPropagation
+      expect(expr.kind).toBe('ErrorPropagation')
+      expect((expr.expr as Identifier).name).toBe('result')
+    })
+  })
+
+  // ─── If / else ────────────────────────────────────────────
+
+  describe('if expressions', () => {
+    it('parses if x > 0 { 1 }', () => {
+      const expr = parseExpr('if x > 0 { 1 }') as IfExpr
+      expect(expr.kind).toBe('IfExpr')
+      expect(expr.condition.kind).toBe('BinaryExpr')
+      expect(expr.then.kind).toBe('BlockExpr')
+      expect(expr.elseBody).toBeUndefined()
+    })
+
+    it('parses if x > 0 { 1 } else { 2 }', () => {
+      const expr = parseExpr('if x > 0 { 1 } else { 2 }') as IfExpr
+      expect(expr.kind).toBe('IfExpr')
+      expect(expr.elseBody).toBeDefined()
+      expect(expr.elseBody!.kind).toBe('BlockExpr')
+    })
+
+    it('parses if as expression (with else, produces value)', () => {
+      const expr = parseExpr('if true { 1 } else { 2 }') as IfExpr
+      expect(expr.kind).toBe('IfExpr')
+      const thenBlock = expr.then as BlockExpr
+      expect((thenBlock.trailing as IntLiteral).value).toBe(1)
+      const elseBlock = expr.elseBody as BlockExpr
+      expect((elseBlock.trailing as IntLiteral).value).toBe(2)
+    })
+
+    it('parses else if chains', () => {
+      const expr = parseExpr('if a { 1 } else if b { 2 } else { 3 }') as IfExpr
+      expect(expr.elseIfs).toHaveLength(1)
+      expect(expr.elseBody).toBeDefined()
+    })
+  })
+
+  // ─── Match ────────────────────────────────────────────────
+
+  describe('match expressions', () => {
+    it('parses match x { case 1 => "one" case _ => "other" }', () => {
+      const expr = parseExpr('match x { case 1 => "one" case _ => "other" }') as MatchExpr
+      expect(expr.kind).toBe('MatchExpr')
+      expect((expr.subject as Identifier).name).toBe('x')
+      expect(expr.arms).toHaveLength(2)
+      expect(expr.arms[0].pattern.kind).toBe('LiteralPattern')
+      expect(expr.arms[1].pattern.kind).toBe('WildcardPattern')
+    })
+
+    it('parses match with enum patterns', () => {
+      const expr = parseExpr('match shape { case Shape.Circle(r) => r case Shape.Rect(w, h) => w }') as MatchExpr
+      expect(expr.arms).toHaveLength(2)
+      expect(expr.arms[0].pattern.kind).toBe('EnumPattern')
+      const enumPat = expr.arms[0].pattern as import('../../src/parser/index.ts').EnumPattern
+      expect(enumPat.name).toBe('Shape')
+      expect(enumPat.variant).toBe('Circle')
+      expect(enumPat.fields).toHaveLength(1)
+    })
+
+    it('parses match with struct patterns', () => {
+      const expr = parseExpr('match user { case User { name, age } => name }') as MatchExpr
+      expect(expr.arms[0].pattern.kind).toBe('StructPattern')
+      const structPat = expr.arms[0].pattern as import('../../src/parser/index.ts').StructPattern
+      expect(structPat.name).toBe('User')
+      expect(structPat.fields).toHaveLength(2)
+    })
+
+    it('parses match with guard: case x if x > 0 => x', () => {
+      const expr = parseExpr('match n { case x if x > 0 => x case _ => 0 }') as MatchExpr
+      expect(expr.arms[0].guard).toBeDefined()
+      expect(expr.arms[0].guard!.kind).toBe('BinaryExpr')
+      expect(expr.arms[0].pattern.kind).toBe('BindingPattern')
+    })
+  })
+
+  // ─── For loop ─────────────────────────────────────────────
+
+  describe('for loops', () => {
+    it('parses for item in list { item }', () => {
+      const stmt = parseStmt('for item in list { item }') as ForLoop
+      expect(stmt.kind).toBe('ForLoop')
+      expect(stmt.pattern).toBe('item')
+      expect((stmt.iterable as Identifier).name).toBe('list')
+      expect(stmt.body.kind).toBe('BlockExpr')
+    })
+
+    it('parses for (key, value) in map { key }', () => {
+      const stmt = parseStmt('for (key, value) in map { key }') as ForLoop
+      expect(stmt.kind).toBe('ForLoop')
+      expect(stmt.pattern).toEqual(['key', 'value'])
+    })
+  })
+
+  // ─── While loop ───────────────────────────────────────────
+
+  describe('while loops', () => {
+    it('parses while condition { body }', () => {
+      const stmt = parseStmt('while x > 0 { x }') as WhileLoop
+      expect(stmt.kind).toBe('WhileLoop')
+      expect(stmt.condition.kind).toBe('BinaryExpr')
+      expect(stmt.body.kind).toBe('BlockExpr')
+    })
+  })
+
+  // ─── Break / Continue ─────────────────────────────────────
+
+  describe('break and continue', () => {
+    it('parses break', () => {
+      const stmt = parseStmt('break') as BreakStmt
+      expect(stmt.kind).toBe('BreakStmt')
+    })
+
+    it('parses continue', () => {
+      const stmt = parseStmt('continue') as ContinueStmt
+      expect(stmt.kind).toBe('ContinueStmt')
+    })
+  })
+
+  // ─── Return ───────────────────────────────────────────────
+
+  describe('return statement', () => {
+    it('parses return value', () => {
+      const stmt = parseStmt('return 42') as ReturnStmt
+      expect(stmt.kind).toBe('ReturnStmt')
+      expect(stmt.value).toBeDefined()
+      expect((stmt.value as IntLiteral).value).toBe(42)
+    })
+
+    it('parses return with expression', () => {
+      const stmt = parseStmt('return a + b') as ReturnStmt
+      expect(stmt.value!.kind).toBe('BinaryExpr')
+    })
+  })
+
+  // ─── Concurrent ───────────────────────────────────────────
+
+  describe('concurrent blocks', () => {
+    it('parses concurrent { a() b() }', () => {
+      const expr = parseExpr('concurrent { a() b() }') as ConcurrentBlock
+      expect(expr.kind).toBe('ConcurrentBlock')
+      expect(expr.exprs).toHaveLength(2)
+      expect(expr.exprs[0].kind).toBe('FnCall')
+      expect(expr.exprs[1].kind).toBe('FnCall')
+    })
+  })
+
+  // ─── Phase 4 error cases ──────────────────────────────────
+
+  describe('phase 4 parse errors', () => {
+    it('reports error for missing function body', () => {
+      const result = parseWithErrors('fn bad()')
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors.some(e => e.code === 'E0204')).toBe(true)
+    })
+
+    it('reports error for missing => in match arm', () => {
+      const result = parseWithErrors('match x { case 1 "one" }')
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors.some(e => e.message.includes("'=>'"))).toBe(true)
     })
   })
 })
