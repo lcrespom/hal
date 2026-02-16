@@ -116,7 +116,7 @@ foundation for all parsing.
 
 ### Tasks
 
-- [ ] Define `TokenType` enum covering all HAL tokens:
+- [x] Define `TokenType` enum covering all HAL tokens:
   - Keywords: `let`, `mut`, `const`, `fn`, `pub`, `return`, `struct`, `enum`, `trait`,
     `impl`, `if`, `else`, `match`, `case`, `for`, `in`, `while`, `break`, `continue`,
     `import`, `as`, `test`, `suite`, `assert`, `assert_eq`, `assert_ne`, `effect`,
@@ -129,48 +129,48 @@ foundation for all parsing.
   - Literals: IntLit, FloatLit, StringLit, BoolLit
   - Identifiers: Ident
   - Special: `->`, `//`, `/* */`, Newline, EOF
-- [ ] Define `Token` type (type, lexeme, span)
-- [ ] Implement `Lexer` class:
+- [x] Define `Token` type (type, lexeme, span)
+- [x] Implement `Lexer` class:
   - Consumes `Source`, produces `Token[]`
   - Handles whitespace and comments (skip, do not emit)
   - Handles single-line comments (`//`)
   - Handles block comments (`/* */`)
-- [ ] Implement integer literal lexing (digits, underscores: `1_000_000`)
-- [ ] Implement float literal lexing (`3.14`, `1.0e10`, `1.0E-5`)
-- [ ] Implement string literal lexing:
+- [x] Implement integer literal lexing (digits, underscores: `1_000_000`)
+- [x] Implement float literal lexing (`3.14`, `1.0e10`, `1.0E-5`)
+- [x] Implement string literal lexing:
   - Simple strings: `"hello"`
   - Escape sequences: `\n`, `\t`, `\\`, `\"`, `\{`, `\u{hex}`
   - String interpolation: `"Hello, {name}"` — lex as StringStart, Expr tokens, StringEnd
     (or lex as a single token with interpolation markers)
   - Multi-line strings: `""" ... """`
-- [ ] Implement identifier and keyword lexing (identifiers that match keywords → keyword
+- [x] Implement identifier and keyword lexing (identifiers that match keywords → keyword
       token)
-- [ ] Implement operator lexing (including multi-character: `==`, `!=`, `<=`, `>=`, `..`,
+- [x] Implement operator lexing (including multi-character: `==`, `!=`, `<=`, `>=`, `..`,
       `..=`, `=>`, `->`)
-- [ ] Implement set literal opening (`#{`)
-- [ ] Produce structured errors for invalid tokens (unterminated string, invalid escape,
+- [x] Implement set literal opening (`#{`)
+- [x] Produce structured errors for invalid tokens (unterminated string, invalid escape,
       etc.)
 
 ### Tests (write first)
 
-- [ ] Test: empty source → `[EOF]`
-- [ ] Test: single keyword → correct token type
-- [ ] Test: all keywords → each produces correct token type
-- [ ] Test: integer literals (`0`, `42`, `1_000_000`) → IntLit tokens
-- [ ] Test: float literals (`0.0`, `3.14`, `1.0e10`) → FloatLit tokens
-- [ ] Test: simple string → StringLit
-- [ ] Test: string with escapes → correct lexeme
-- [ ] Test: string interpolation `"Hello, {name}"` → correct token sequence
-- [ ] Test: multi-line string → StringLit
-- [ ] Test: all operators → correct token types
-- [ ] Test: all delimiters → correct token types
-- [ ] Test: identifiers → Ident
-- [ ] Test: comments are skipped
-- [ ] Test: block comments are skipped
-- [ ] Test: mixed tokens (a realistic code snippet)
-- [ ] Test: unterminated string → structured error with line/column
-- [ ] Test: invalid escape sequence → structured error
-- [ ] Test: unexpected character → structured error
+- [x] Test: empty source → `[EOF]`
+- [x] Test: single keyword → correct token type
+- [x] Test: all keywords → each produces correct token type
+- [x] Test: integer literals (`0`, `42`, `1_000_000`) → IntLit tokens
+- [x] Test: float literals (`0.0`, `3.14`, `1.0e10`) → FloatLit tokens
+- [x] Test: simple string → StringLit
+- [x] Test: string with escapes → correct lexeme
+- [x] Test: string interpolation `"Hello, {name}"` → correct token sequence
+- [x] Test: multi-line string → StringLit
+- [x] Test: all operators → correct token types
+- [x] Test: all delimiters → correct token types
+- [x] Test: identifiers → Ident
+- [x] Test: comments are skipped
+- [x] Test: block comments are skipped
+- [x] Test: mixed tokens (a realistic code snippet)
+- [x] Test: unterminated string → structured error with line/column
+- [x] Test: invalid escape sequence → structured error
+- [x] Test: unexpected character → structured error
 
 ### Deliverable
 
