@@ -58,7 +58,9 @@ on.
 
 ### Tasks
 
-- [ ] Initialize Node.js project with TypeScript (`package.json`, `tsconfig.json`)
+- [ ] Initialize Node.js project with TypeScript (`package.json`, `tsconfig.json`).
+      **Notice**: those files already exist, only add and change what's necessary. There
+      is no ts => js transpiling, modern node.js can directly run TypeScript.
 - [ ] Set up test framework (Vitest)
 - [ ] Set up project directory structure:
   ```
