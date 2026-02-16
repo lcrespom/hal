@@ -5,9 +5,9 @@ operator, and error type conventions.
 
 ## Design Principle
 
-There are no exceptions in HAL. All errors are values. Every function that can fail returns
-`Result<T, E>`. Every value that might be absent is `Optional<T>`. Error handling is
-always explicit, local, and visible.
+There are no exceptions in HAL. All errors are values. Every function that can fail
+returns `Result<T, E>`. Every value that might be absent is `Optional<T>`. Error handling
+is always explicit, local, and visible.
 
 ## Result\<T, E\>
 

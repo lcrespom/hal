@@ -1,20 +1,22 @@
 {
-  "name": "aopl",
-  "version": "1.0.0",
-  "description": "",
+  "name": "hal-lang",
+  "version": "0.1.0",
+  "description": "HAL (High-level Agentic coding Language) to TypeScript compiler",
   "type": "module",
   "bin": {
-    "aopl": "./src/cli.ts"
+    "hal": "./src/cli/main.ts"
   },
   "scripts": {
-    "start": "node src/cli.ts",
-    "test": "node --test"
+    "start": "node src/cli/main.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22",
-    "typescript": "^5.8"
+    "typescript": "^5.8",
+    "vitest": "^4.0.18"
   }
 }

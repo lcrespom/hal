@@ -1,8 +1,8 @@
 # HAL Design Principles
 
-These principles guide all design decisions for HAL. They capture what makes code easy
-for coding agents to reliably generate, understand, and manipulate — while remaining
-readable and reviewable by humans.
+These principles guide all design decisions for HAL. They capture what makes code easy for
+coding agents to reliably generate, understand, and manipulate — while remaining readable
+and reviewable by humans.
 
 ## 1. Minimal Ambiguity
 
@@ -52,9 +52,9 @@ reason about correctness and enables automatic test generation.
 
 ## 5. Effect System
 
-Side effects must be explicitly declared and controlled. An effect system makes it possible
-to know exactly what a function can and cannot do, which is critical for agents to reason
-about safety and composition.
+Side effects must be explicitly declared and controlled. An effect system makes it
+possible to know exactly what a function can and cannot do, which is critical for agents
+to reason about safety and composition.
 
 - Functions declare their effects (e.g., `effects: [Database.Write, Logger.Info]`).
 - Functions can also declare what they forbid (e.g., `forbids: [Network.External]`),
@@ -94,8 +94,8 @@ Agents work best when code follows predictable patterns. The language should enc
 enforce) consistent project structure.
 
 - A standard module system with a clear, consistent file-to-module mapping.
-- A canonical code formatter built into the toolchain (not optional) — all HAL code
-  looks the same.
+- A canonical code formatter built into the toolchain (not optional) — all HAL code looks
+  the same.
 - A standard project layout convention so agents always know where to find things.
 
 ## 9. Machine-Friendly Diagnostics

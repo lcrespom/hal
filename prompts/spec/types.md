@@ -5,14 +5,14 @@ type inference rules.
 
 ## Primitive Types
 
-| Type | Description | Example Literals |
-| ---- | ----------- | ---------------- |
-| `Int` | Arbitrary-precision integer. The transpiler chooses the representation. | `0`, `42`, `-7`, `1_000_000` |
-| `Float` | IEEE 754 double-precision floating point. | `0.0`, `3.14`, `-0.5`, `1.0e10` |
-| `Bool` | Boolean value. | `true`, `false` |
-| `String` | UTF-8 encoded text. Immutable. | `"hello"`, `"line\nbreak"` |
-| `Void` | The unit type. Used as a return type for functions that produce no value. | (no literal) |
-| `Never` | The bottom type. Indicates a function that never returns (e.g., infinite loop, always errors). | (no literal) |
+| Type     | Description                                                                                    | Example Literals                |
+| -------- | ---------------------------------------------------------------------------------------------- | ------------------------------- |
+| `Int`    | Arbitrary-precision integer. The transpiler chooses the representation.                        | `0`, `42`, `-7`, `1_000_000`    |
+| `Float`  | IEEE 754 double-precision floating point.                                                      | `0.0`, `3.14`, `-0.5`, `1.0e10` |
+| `Bool`   | Boolean value.                                                                                 | `true`, `false`                 |
+| `String` | UTF-8 encoded text. Immutable.                                                                 | `"hello"`, `"line\nbreak"`      |
+| `Void`   | The unit type. Used as a return type for functions that produce no value.                      | (no literal)                    |
+| `Never`  | The bottom type. Indicates a function that never returns (e.g., infinite loop, always errors). | (no literal)                    |
 
 ### Int
 
@@ -41,14 +41,14 @@ let computed = "2 + 2 = {2 + 2}"      // "2 + 2 = 4"
 
 Escape sequences:
 
-| Escape | Meaning |
-| ------ | ------- |
-| `\n` | Newline |
-| `\t` | Tab |
-| `\\` | Backslash |
-| `\"` | Double quote |
-| `\{` | Literal `{` (escapes interpolation) |
-| `\u{XXXX}` | Unicode code point |
+| Escape     | Meaning                             |
+| ---------- | ----------------------------------- |
+| `\n`       | Newline                             |
+| `\t`       | Tab                                 |
+| `\\`       | Backslash                           |
+| `\"`       | Double quote                        |
+| `\{`       | Literal `{` (escapes interpolation) |
+| `\u{XXXX}` | Unicode code point                  |
 
 Multi-line strings use triple quotes:
 
@@ -226,8 +226,8 @@ fn get_user_email(id: String) -> Optional<String> {
 
 ### Result\<T, E\>
 
-Represents either a success value or an error. See
-[error-handling.md](error-handling.md) for full details.
+Represents either a success value or an error. See [error-handling.md](error-handling.md)
+for full details.
 
 ```rust
 enum Result<T, E> {

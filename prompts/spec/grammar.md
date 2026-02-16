@@ -351,11 +351,11 @@ BlockComment    = "/*" { <any character> } "*/" ;
 
 ## Naming Conventions (Enforced by Formatter)
 
-| Element | Convention | Example |
-| ------- | ---------- | ------- |
-| Variables, functions, parameters | snake_case | `user_name`, `get_user` |
-| Types, traits, enums | PascalCase | `User`, `Serializable`, `Shape` |
-| Constants | SCREAMING_SNAKE_CASE | `MAX_SIZE`, `PI` |
-| Modules (files) | snake_case | `user_auth.hal` |
-| Enum variants | PascalCase | `Shape.Circle` |
-| Effects | PascalCase | `FileSystem.Read` |
+| Element                          | Convention           | Example                         |
+| -------------------------------- | -------------------- | ------------------------------- |
+| Variables, functions, parameters | snake_case           | `user_name`, `get_user`         |
+| Types, traits, enums             | PascalCase           | `User`, `Serializable`, `Shape` |
+| Constants                        | SCREAMING_SNAKE_CASE | `MAX_SIZE`, `PI`                |
+| Modules (files)                  | snake_case           | `user_auth.hal`                 |
+| Enum variants                    | PascalCase           | `Shape.Circle`                  |
+| Effects                          | PascalCase           | `FileSystem.Read`               |

@@ -64,7 +64,7 @@ fn add_item(mut list: List<Int>, item: Int) -> List<Int> {
 }
 ```
 
-Note: this mutates the *local copy*. The caller's binding is not affected. HAL has no
+Note: this mutates the _local copy_. The caller's binding is not affected. HAL has no
 reference or pointer types.
 
 ## Return Type
@@ -81,8 +81,8 @@ fn get_count() -> Int {     // returns Int
 }
 ```
 
-The `return` keyword is required for returning values. There are no implicit returns —
-the last expression is not automatically returned (principle 3: Explicit Over Implicit).
+The `return` keyword is required for returning values. There are no implicit returns — the
+last expression is not automatically returned (principle 3: Explicit Over Implicit).
 
 ```rust
 // CORRECT:
@@ -103,8 +103,8 @@ documentation and correctness checks.
 
 ### Preconditions
 
-A `precondition` declares what must be true before the function is called. If violated, the
-program fails with a contract violation error.
+A `precondition` declares what must be true before the function is called. If violated,
+the program fails with a contract violation error.
 
 ```rust
 fn withdraw(account: Account, amount: Float) -> Result<Account, BankError>
@@ -162,6 +162,7 @@ fn save(user: User) -> Result<Void, DbError>
 ```
 
 A function that calls another function with effects must either:
+
 1. Declare those same effects (or a parent effect)
 2. Be inside a context that handles the effect
 
@@ -169,7 +170,7 @@ See [effects.md](effects.md) for the full effect system specification.
 
 ## The `forbids` Clause
 
-A function can declare effects it guarantees it will *never* perform:
+A function can declare effects it guarantees it will _never_ perform:
 
 ```rust
 fn compute_score(data: List<Int>) -> Int

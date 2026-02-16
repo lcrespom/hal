@@ -11,7 +11,8 @@ platform-specific implementations. Agents never see the target platform.
 
 ## Collections
 
-Collections are covered in [types.md](types.md). This section covers additional operations.
+Collections are covered in [types.md](types.md). This section covers additional
+operations.
 
 ### List\<T\>
 

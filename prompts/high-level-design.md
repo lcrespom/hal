@@ -379,8 +379,8 @@ to `fs.readFile` (TypeScript), `std::fs::read` (Rust), etc.
 
 ## FFI (Foreign Function Interface)
 
-FFI is the explicit boundary between HAL and the target platform. It is the **only**
-place where target-specific details appear:
+FFI is the explicit boundary between HAL and the target platform. It is the **only** place
+where target-specific details appear:
 
 ```rust
 ffi "typescript" {
@@ -389,8 +389,8 @@ ffi "typescript" {
 }
 ```
 
-FFI declarations are isolated in dedicated modules. Regular HAL code never sees the
-target platform.
+FFI declarations are isolated in dedicated modules. Regular HAL code never sees the target
+platform.
 
 ## External Package Ecosystem
 
@@ -399,8 +399,8 @@ HAL supports importing packages from target-platform registries (npm, JSR) throu
 one while keeping HAL code completely isolated from the target platform.
 
 The flow: declare the dependency in `hal.toml`, provide (or auto-generate) a `.halx`
-binding that defines the HAL-facing API, and import it like any HAL module. The agent never
-sees TypeScript — the transpiler handles the mapping.
+binding that defines the HAL-facing API, and import it like any HAL module. The agent
+never sees TypeScript — the transpiler handles the mapping.
 
 See [spec/modules.md](spec/modules.md#external-packages) for the full specification.
 

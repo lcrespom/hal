@@ -1,7 +1,7 @@
 # Effects
 
-This section defines HAL's effect system — how side effects are declared, propagated,
-and verified.
+This section defines HAL's effect system — how side effects are declared, propagated, and
+verified.
 
 ## Overview
 
@@ -169,7 +169,7 @@ The compiler produces:
 
 ## The `forbids` Clause
 
-A function can declare effects it guarantees it will *never* perform:
+A function can declare effects it guarantees it will _never_ perform:
 
 ```rust
 fn compute_total(items: List<Item>) -> Float
@@ -209,19 +209,19 @@ have `effects [Network]` (or any sub-effect of `Network`).
 
 The effect system drives transpiler decisions:
 
-| Effect | TypeScript transpilation |
-| ------ | ----------------------- |
-| `FileSystem.*` | `async` function using `fs` API |
-| `Network.*` | `async` function using `fetch` / HTTP client |
-| `Database.*` | `async` function using database driver |
-| `Console.*` | Synchronous `console.*` calls |
-| `Crypto.*` | May be sync or async depending on operation |
-| `Time.Read` | Synchronous `Date.now()` |
+| Effect          | TypeScript transpilation                       |
+| --------------- | ---------------------------------------------- |
+| `FileSystem.*`  | `async` function using `fs` API                |
+| `Network.*`     | `async` function using `fetch` / HTTP client   |
+| `Database.*`    | `async` function using database driver         |
+| `Console.*`     | Synchronous `console.*` calls                  |
+| `Crypto.*`      | May be sync or async depending on operation    |
+| `Time.Read`     | Synchronous `Date.now()`                       |
 | `Time.Schedule` | `async` with `setTimeout` / scheduling library |
-| `Logging.*` | Synchronous logging calls |
+| `Logging.*`     | Synchronous logging calls                      |
 
-The key insight: agents never write `async` or `await`. The transpiler sees `effects
-[Network.External]` and generates the appropriate async wrapper for the target.
+The key insight: agents never write `async` or `await`. The transpiler sees
+`effects [Network.External]` and generates the appropriate async wrapper for the target.
 
 ## Pure Functions
 

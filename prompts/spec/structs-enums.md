@@ -219,9 +219,8 @@ To support ordering (`<`, `>`, `<=`, `>=`), implement the `Comparable` trait exp
 
 ## Copying and Cloning
 
-All values in HAL are logically copied on assignment. The transpiler may optimize this
-to references or copy-on-write behind the scenes, but the agent always sees value
-semantics.
+All values in HAL are logically copied on assignment. The transpiler may optimize this to
+references or copy-on-write behind the scenes, but the agent always sees value semantics.
 
 ```rust
 let a = User { name: "Alice", email: "a@b.com", age: 30 }

@@ -30,8 +30,8 @@ and serve as documentation.
 
 ### Test Body
 
-The test body is a block of statements. If any `assert` fails, the test fails. If the
-body executes to completion without assertion failure, the test passes.
+The test body is a block of statements. If any `assert` fails, the test fails. If the body
+executes to completion without assertion failure, the test passes.
 
 ## Test Suites
 
@@ -85,6 +85,7 @@ assert list.contains("item")
 ```
 
 When an assertion fails, the test runner reports:
+
 - The file and line of the assertion
 - The expression that failed
 - The actual values of the operands (when possible)
@@ -222,6 +223,7 @@ fn withdraw(account: Account, amount: Float) -> Result<Account, BankError>
 ```
 
 Running `hal test --generate-contract-tests` produces tests that:
+
 1. Verify the function succeeds when preconditions are met.
 2. Verify the function fails (or the precondition check triggers) when preconditions are
    violated.

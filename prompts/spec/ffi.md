@@ -1,11 +1,12 @@
 # Foreign Function Interface (FFI)
 
-This section defines HAL's FFI — the explicit boundary between HAL and the target platform.
+This section defines HAL's FFI — the explicit boundary between HAL and the target
+platform.
 
 ## Design Principle
 
-FFI is the **only** place where target-specific details appear. Regular HAL code never sees
-the compilation target. FFI declarations are isolated in dedicated modules.
+FFI is the **only** place where target-specific details appear. Regular HAL code never
+sees the compilation target. FFI declarations are isolated in dedicated modules.
 
 ## FFI Blocks
 
@@ -39,22 +40,23 @@ ffi "<target>" {
 
 FFI functions must use HAL types in their signatures. The transpiler handles the mapping:
 
-| HAL Type | TypeScript | Rust |
-| -------- | ---------- | ---- |
-| `Int` | `number` | `i64` |
-| `Float` | `number` | `f64` |
-| `Bool` | `boolean` | `bool` |
-| `String` | `string` | `String` |
-| `Void` | `void` | `()` |
-| `List<T>` | `Array<T>` | `Vec<T>` |
-| `Map<K, V>` | `Map<K, V>` | `HashMap<K, V>` |
-| `Optional<T>` | `T \| null` | `Option<T>` |
-| `Result<T, E>` | (try/catch wrapper) | `Result<T, E>` |
+| HAL Type       | TypeScript          | Rust            |
+| -------------- | ------------------- | --------------- |
+| `Int`          | `number`            | `i64`           |
+| `Float`        | `number`            | `f64`           |
+| `Bool`         | `boolean`           | `bool`          |
+| `String`       | `string`            | `String`        |
+| `Void`         | `void`              | `()`            |
+| `List<T>`      | `Array<T>`          | `Vec<T>`        |
+| `Map<K, V>`    | `Map<K, V>`         | `HashMap<K, V>` |
+| `Optional<T>`  | `T \| null`         | `Option<T>`     |
+| `Result<T, E>` | (try/catch wrapper) | `Result<T, E>`  |
 
 ### FFI Functions are Effectful
 
 All FFI functions are inherently effectful (they cross the platform boundary). If no
-explicit effects are declared, the compiler treats them as having an implicit `FFI` effect.
+explicit effects are declared, the compiler treats them as having an implicit `FFI`
+effect.
 
 ## FFI Modules
 
@@ -118,6 +120,7 @@ ffi "typescript" {
 ```
 
 Opaque FFI types can only be:
+
 - Passed to and returned from FFI functions
 - Stored in HAL data structures
 - Compared for equality (if the target supports it)

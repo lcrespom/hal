@@ -86,7 +86,8 @@ impl Displayable for Shape {
 1. **Explicit implementation only** — there is no structural typing. A type satisfies a
    trait only if there is an explicit `impl` block.
 2. **Orphan rule** — a trait can only be implemented for a type in the module that defines
-   either the trait or the type (not in a third module). This prevents action at a distance.
+   either the trait or the type (not in a third module). This prevents action at a
+   distance.
 3. **No partial implementation** — all required methods (those without defaults) must be
    provided.
 
@@ -195,19 +196,19 @@ Any type implementing `Comparable` must also implement `Eq`.
 
 The standard library defines these fundamental traits:
 
-| Trait | Methods | Purpose |
-| ----- | ------- | ------- |
-| `Eq` | `fn eq(self, other: Self) -> Bool` | Equality comparison |
-| `Comparable` | `fn compare(self, other: Self) -> Ordering` | Ordering (extends `Eq`) |
-| `Hashable` | `fn hash(self) -> Int` | Hash computation (for Map/Set keys) |
-| `Displayable` | `fn display(self) -> String` | Human-readable representation |
-| `Serializable` | `fn serialize(self) -> String`, `fn deserialize(String) -> Result<Self, E>` | Serialization/deserialization |
-| `ToString` | `fn to_string(self) -> String` | String conversion |
-| `Into<T>` | `fn into(self) -> T` | Infallible type conversion |
-| `TryInto<T, E>` | `fn try_into(self) -> Result<T, E>` | Fallible type conversion |
-| `Default` | `fn default() -> Self` | Default value construction |
-| `Clone` | `fn clone(self) -> Self` | Explicit deep copy |
-| `Iterator<T>` | `fn next(mut self) -> Optional<T>` | Iteration protocol |
+| Trait           | Methods                                                                     | Purpose                             |
+| --------------- | --------------------------------------------------------------------------- | ----------------------------------- |
+| `Eq`            | `fn eq(self, other: Self) -> Bool`                                          | Equality comparison                 |
+| `Comparable`    | `fn compare(self, other: Self) -> Ordering`                                 | Ordering (extends `Eq`)             |
+| `Hashable`      | `fn hash(self) -> Int`                                                      | Hash computation (for Map/Set keys) |
+| `Displayable`   | `fn display(self) -> String`                                                | Human-readable representation       |
+| `Serializable`  | `fn serialize(self) -> String`, `fn deserialize(String) -> Result<Self, E>` | Serialization/deserialization       |
+| `ToString`      | `fn to_string(self) -> String`                                              | String conversion                   |
+| `Into<T>`       | `fn into(self) -> T`                                                        | Infallible type conversion          |
+| `TryInto<T, E>` | `fn try_into(self) -> Result<T, E>`                                         | Fallible type conversion            |
+| `Default`       | `fn default() -> Self`                                                      | Default value construction          |
+| `Clone`         | `fn clone(self) -> Self`                                                    | Explicit deep copy                  |
+| `Iterator<T>`   | `fn next(mut self) -> Optional<T>`                                          | Iteration protocol                  |
 
 ### Auto-derived Traits
 
@@ -229,5 +230,5 @@ The `derive` directive generates standard implementations. Derivable traits: `Eq
 
 HAL has no class inheritance. The only mechanism for shared behavior is traits (horizontal
 composition), not class hierarchies (vertical inheritance). This is deliberate — it
-eliminates the complexity of method resolution order, super calls, diamond inheritance, and
-other patterns that make code hard for agents to reason about.
+eliminates the complexity of method resolution order, super calls, diamond inheritance,
+and other patterns that make code hard for agents to reason about.
