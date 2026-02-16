@@ -11,33 +11,48 @@ this language is:
 This will be the approach: we will progress interactively one step at a time, so I can
 review and provide feedback.
 
-1. Ceate a brief document in `prompts/high-level-design.md`, that describes how this
+1. Establish a set of design principles that guide all subsequent decisions. These
+   principles should capture what makes code easy for agents to manipulate: minimal
+   ambiguity, uniform syntax, explicit over implicit, strong locality of reasoning, and
+   minimal hidden state. Document these in `prompts/design-principles.md`.
+
+2. Create a brief document in `prompts/high-level-design.md`, that describes how this
    programming language would look like, how you would design it and what features would
    you give it.
 
-2. Let's decide on a catchy name for it. For now, we will call it ACOPL: agentic coding
+3. Let's decide on a catchy name for it. For now, we will call it ACOPL: agentic coding
    oriented programming language.
 
-3. Create a proper formal design document in `prompts/design.md`.
+4. Create a proper formal design document in `prompts/design.md`.
 
-4. Create a `prompts/plan.md` document with a multi-step plan to implement a "compiler"
-   from ACOPL to TypeScript. I choose TypeScript initially because it is very portable,
-   can run on the web, and has a very large ecosystem / package support. The plan should
-   have multiple incremental phases, implementing different aspects of the language. Each
-   phase will have a list of tasks marked using the markdown [ ] / [x] notation. We will
-   then follow the plan one phase at a time, stopping at each phase so I can validate if
-   it's working and also review the code, potentially requesting some changes. Each phase
-   should have extensive code tests to validate it is working as designed. Let's use TDD,
-   so for each feature you build the tests first and implement later.
+5. Create a `prompts/plan.md` document with a multi-step plan to implement a "compiler"
+   from ACOPL to TypeScript. Let's choose TypeScript initially because it is very
+   portable, can run on the web, and has a very large ecosystem / package support.
+   - The plan should have multiple incremental phases, implementing different aspects of
+     the language. Each phase will have a list of tasks marked using the markdown [ ] /
+     [x] notation.
+   - We will then follow the plan one phase at a time, stopping at each phase so I can
+     validate if it's working and also review the code, potentially requesting some
+     changes.
+   - Each phase should have extensive code tests to validate it is working as designed.
+     Let's use TDD, so for each feature you build the tests first and implement later.
+   - The compiler should produce extremely clear, actionable error messages — possibly
+     even structured error output (JSON) that agents can parse programmatically, not just
+     human-readable text. This should be considered from the earliest phases.
 
-5. We will create an agent-oriented language documentation, so agents learn how to use it
+6. We will create an agent-oriented language documentation, so agents learn how to use it
    to generate code with it.
 
-6. At a certain point, we will decide that the ACOPL to TypeScript compiler is mature
+7. Implement a REPL or incremental compilation mode, so agents can test snippets quickly
+   and work iteratively, which matches how agentic coding typically operates.
+
+8. At a certain point, we will decide that the ACOPL to TypeScript compiler is mature
    enough to be self-hosted, i.e., written in its own programming language. Thus, version
    2 of this ACOPL to typescript compiler will be implemented in ACOPL, which will be a
    great way to test the language design. We will then evaluate any issues and potential
    improvements of the language and update its documentation and design if necessary, then
    implement them.
 
-What do you think of this plan? Would you like to add anything?
+9. Implement a Language Server Protocol (LSP) server for ACOPL, enabling code intelligence
+   (autocomplete, go-to-definition, diagnostics) in editors and for agents that leverage
+   LSP.
