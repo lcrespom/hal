@@ -185,7 +185,7 @@ structured errors for invalid input.
 
 ### Tasks
 
-- [ ] Define AST node types for this phase:
+- [x] Define AST node types for this phase:
   - `IntLiteral`, `FloatLiteral`, `StringLiteral`, `BoolLiteral`
   - `StringInterpolation` (segments: array of literal strings and expressions)
   - `Identifier`
@@ -199,44 +199,44 @@ structured errors for invalid input.
   - `Assignment` (target, value)
   - `Block` (statements, optional trailing expression)
   - `ExprStatement` (expression used as statement)
-- [ ] Implement `Parser` class (consumes token stream, produces AST)
-- [ ] Implement Pratt parser (or recursive descent with precedence) for expressions:
+- [x] Implement `Parser` class (consumes token stream, produces AST)
+- [x] Implement Pratt parser (or recursive descent with precedence) for expressions:
   - Operator precedence per spec (member access > unary > mul > add > range > comparison >
     and > or > assignment)
   - Left/right/none associativity per spec
-- [ ] Implement literal parsing (int, float, string, bool)
-- [ ] Implement string interpolation parsing
-- [ ] Implement list literal: `[1, 2, 3]`
-- [ ] Implement map literal: `{"key": value}`
-- [ ] Implement set literal: `#{1, 2, 3}`
-- [ ] Implement `let` and `const` declarations
-- [ ] Implement assignment statements
-- [ ] Implement block parsing: `{ statements; optional_expr }`
-- [ ] Implement block expressions (block as expression)
-- [ ] Produce structured parse errors (unexpected token, expected expression, etc.)
+- [x] Implement literal parsing (int, float, string, bool)
+- [x] Implement string interpolation parsing
+- [x] Implement list literal: `[1, 2, 3]`
+- [x] Implement map literal: `{"key": value}`
+- [x] Implement set literal: `#{1, 2, 3}`
+- [x] Implement `let` and `const` declarations
+- [x] Implement assignment statements
+- [x] Implement block parsing: `{ statements; optional_expr }`
+- [x] Implement block expressions (block as expression)
+- [x] Produce structured parse errors (unexpected token, expected expression, etc.)
 
 ### Tests (write first)
 
-- [ ] Test: integer literal → `IntLiteral` node
-- [ ] Test: `1 + 2` → `BinaryExpr(IntLiteral(1), +, IntLiteral(2))`
-- [ ] Test: `1 + 2 * 3` → correct precedence (mul binds tighter)
-- [ ] Test: `(1 + 2) * 3` → grouped correctly
-- [ ] Test: `-x` → `UnaryExpr(-, Identifier(x))`
-- [ ] Test: `not flag` → `UnaryExpr(not, Identifier(flag))`
-- [ ] Test: `a and b or c` → correct precedence
-- [ ] Test: `a == b` → `BinaryExpr` with `==`
-- [ ] Test: `1..10` → range expression
-- [ ] Test: `"hello {name}"` → `StringInterpolation`
-- [ ] Test: `[1, 2, 3]` → `ListLiteral`
-- [ ] Test: `{"a": 1, "b": 2}` → `MapLiteral`
-- [ ] Test: `#{1, 2, 3}` → `SetLiteral`
-- [ ] Test: `let x = 5` → `LetDecl`
-- [ ] Test: `let mut x: Int = 5` → `LetDecl` with mut and type
-- [ ] Test: `const MAX: Int = 100` → `ConstDecl`
-- [ ] Test: `x = 10` → `Assignment`
-- [ ] Test: `{ let x = 1; x + 1 }` → `Block` with trailing expr
-- [ ] Test: missing expression → structured error
-- [ ] Test: missing `=` in let → structured error
+- [x] Test: integer literal → `IntLiteral` node
+- [x] Test: `1 + 2` → `BinaryExpr(IntLiteral(1), +, IntLiteral(2))`
+- [x] Test: `1 + 2 * 3` → correct precedence (mul binds tighter)
+- [x] Test: `(1 + 2) * 3` → grouped correctly
+- [x] Test: `-x` → `UnaryExpr(-, Identifier(x))`
+- [x] Test: `not flag` → `UnaryExpr(not, Identifier(flag))`
+- [x] Test: `a and b or c` → correct precedence
+- [x] Test: `a == b` → `BinaryExpr` with `==`
+- [x] Test: `1..10` → range expression
+- [x] Test: `"hello {name}"` → `StringInterpolation`
+- [x] Test: `[1, 2, 3]` → `ListLiteral`
+- [x] Test: `{"a": 1, "b": 2}` → `MapLiteral`
+- [x] Test: `#{1, 2, 3}` → `SetLiteral`
+- [x] Test: `let x = 5` → `LetDecl`
+- [x] Test: `let mut x: Int = 5` → `LetDecl` with mut and type
+- [x] Test: `const MAX: Int = 100` → `ConstDecl`
+- [x] Test: `x = 10` → `Assignment`
+- [x] Test: `{ let x = 1; x + 1 }` → `Block` with trailing expr
+- [x] Test: missing expression → structured error
+- [x] Test: missing `=` in let → structured error
 
 ### Deliverable
 
