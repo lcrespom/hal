@@ -36,15 +36,15 @@ the language.
 A small set of primitive types:
 
 ```
-Int, Float, Bool, String, Char, Void, Never
+Int, Float, Bool, String, Void, Never
 ```
 
 ### Composite Types
 
 - **Struct** — product types with named fields.
 - **Enum** — sum types (tagged unions) with optional associated data.
-- **Tuple** — anonymous product types for lightweight grouping.
-- **List\<T\>** — ordered collections.
+- **List\<T\>** — ordered collections with O(1) indexed access and append. The transpiler
+  chooses the underlying implementation (e.g., JS `Array`, Rust `Vec`).
 - **Map\<K, V\>** — key-value collections.
 - **Set\<T\>** — unique-value collections.
 - **Optional\<T\>** — explicit nullability (no null/nil in the language).
