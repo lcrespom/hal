@@ -219,10 +219,10 @@ test "division returns correct result" {
 }
 ```
 
-Tests can be grouped into test modules for organization:
+Tests can be grouped into suites for organization:
 
 ```
-test module "User validation" {
+test suite "User validation" {
   test "rejects negative age" {
     let result = User.new("Alice", "alice@example.com", -1)
     assert result.is_err()
