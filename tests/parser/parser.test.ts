@@ -38,6 +38,16 @@ import type {
   WhileLoop,
   BreakStmt,
   ContinueStmt,
+  // Phase 5
+  TypeExpr,
+  NamedType,
+  GenericType,
+  FnType,
+  StructDecl,
+  EnumDecl,
+  TypeAlias,
+  ImplBlock,
+  StructLiteral,
 } from '../../src/parser/index.ts'
 
 /** Helper: lex then parse a string. */
@@ -345,7 +355,9 @@ describe('Parser', () => {
       expect(stmt.kind).toBe('LetDecl')
       expect(stmt.mutable).toBe(true)
       expect(stmt.name).toBe('x')
-      expect(stmt.typeAnnotation).toBe('Int')
+      expect(stmt.typeAnnotation).toBeDefined()
+      expect(stmt.typeAnnotation!.kind).toBe('NamedType')
+      expect((stmt.typeAnnotation as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
       expect((stmt.initializer as IntLiteral).value).toBe(5)
     })
 
@@ -360,7 +372,8 @@ describe('Parser', () => {
       const stmt = parseStmt('const MAX: Int = 100') as ConstDecl
       expect(stmt.kind).toBe('ConstDecl')
       expect(stmt.name).toBe('MAX')
-      expect(stmt.typeAnnotation).toBe('Int')
+      expect(stmt.typeAnnotation).toBeDefined()
+      expect((stmt.typeAnnotation as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
       expect((stmt.initializer as IntLiteral).value).toBe(100)
     })
 
@@ -488,10 +501,12 @@ describe('Parser', () => {
       expect(stmt.name).toBe('add')
       expect(stmt.params).toHaveLength(2)
       expect(stmt.params[0].name).toBe('a')
-      expect(stmt.params[0].type).toBe('Int')
+      expect(stmt.params[0].type).toBeDefined()
+      expect((stmt.params[0].type as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
       expect(stmt.params[1].name).toBe('b')
-      expect(stmt.params[1].type).toBe('Int')
-      expect(stmt.returnType).toBe('Int')
+      expect((stmt.params[1].type as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
+      expect(stmt.returnType).toBeDefined()
+      expect((stmt.returnType as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
     })
 
     it('parses function with precondition and postcondition', () => {
@@ -553,8 +568,8 @@ describe('Parser', () => {
 
     it('parses closure with typed params and return type', () => {
       const expr = parseExpr('fn(x: Int) -> Int { x + 1 }') as ClosureLiteral
-      expect(expr.params[0].type).toBe('Int')
-      expect(expr.returnType).toBe('Int')
+      expect((expr.params[0].type as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
+      expect((expr.returnType as import('../../src/parser/index.ts').NamedType).name).toBe('Int')
     })
   })
 
@@ -788,6 +803,261 @@ describe('Parser', () => {
       const result = parseWithErrors('match x { case 1 "one" }')
       expect(result.errors.length).toBeGreaterThan(0)
       expect(result.errors.some(e => e.message.includes("'=>'"))).toBe(true)
+    })
+  })
+
+  // ═══════════════════════════════════════════════════════════════
+  // Phase 5: Types & Data Structures
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Type annotations ──────────────────────────────────────
+
+  describe('type annotations', () => {
+    it('parses generic type annotation List<Int>', () => {
+      const stmt = parseStmt('let x: List<Int> = y') as LetDecl
+      expect(stmt.typeAnnotation).toBeDefined()
+      const ta = stmt.typeAnnotation as GenericType
+      expect(ta.kind).toBe('GenericType')
+      expect(ta.name).toBe('List')
+      expect(ta.args).toHaveLength(1)
+      expect((ta.args[0] as NamedType).name).toBe('Int')
+    })
+
+    it('parses nested generic Result<List<User>, Error>', () => {
+      const stmt = parseStmt('let x: Result<List<User>, Error> = y') as LetDecl
+      const ta = stmt.typeAnnotation as GenericType
+      expect(ta.kind).toBe('GenericType')
+      expect(ta.name).toBe('Result')
+      expect(ta.args).toHaveLength(2)
+      const inner = ta.args[0] as GenericType
+      expect(inner.kind).toBe('GenericType')
+      expect(inner.name).toBe('List')
+      expect((inner.args[0] as NamedType).name).toBe('User')
+      expect((ta.args[1] as NamedType).name).toBe('Error')
+    })
+
+    it('parses function type fn(Int) -> Bool', () => {
+      const stmt = parseStmt('let f: fn(Int) -> Bool = g') as LetDecl
+      const ta = stmt.typeAnnotation as FnType
+      expect(ta.kind).toBe('FnType')
+      expect(ta.params).toHaveLength(1)
+      expect((ta.params[0] as NamedType).name).toBe('Int')
+      expect((ta.returnType as NamedType).name).toBe('Bool')
+    })
+
+    it('parses function type with multiple params fn(Int, String) -> Void', () => {
+      const stmt = parseStmt('let f: fn(Int, String) -> Void = g') as LetDecl
+      const ta = stmt.typeAnnotation as FnType
+      expect(ta.kind).toBe('FnType')
+      expect(ta.params).toHaveLength(2)
+      expect((ta.params[0] as NamedType).name).toBe('Int')
+      expect((ta.params[1] as NamedType).name).toBe('String')
+      expect((ta.returnType as NamedType).name).toBe('Void')
+    })
+  })
+
+  // ─── Struct declarations ────────────────────────────────────
+
+  describe('struct declarations', () => {
+    it('parses struct User { name: String, age: Int }', () => {
+      const stmt = parseStmt('struct User { name: String, age: Int }') as StructDecl
+      expect(stmt.kind).toBe('StructDecl')
+      expect(stmt.pub).toBe(false)
+      expect(stmt.name).toBe('User')
+      expect(stmt.fields).toHaveLength(2)
+      expect(stmt.fields[0].name).toBe('name')
+      expect((stmt.fields[0].type as NamedType).name).toBe('String')
+      expect(stmt.fields[1].name).toBe('age')
+      expect((stmt.fields[1].type as NamedType).name).toBe('Int')
+    })
+
+    it('parses struct with invariant', () => {
+      const stmt = parseStmt('struct User { age: Int invariant { age > 0 } }') as StructDecl
+      expect(stmt.fields).toHaveLength(1)
+      expect(stmt.invariants).toHaveLength(1)
+    })
+
+    it('parses struct with derive [Eq, Hashable]', () => {
+      const stmt = parseStmt('struct Point { x: Int, y: Int derive [Eq, Hashable] }') as StructDecl
+      expect(stmt.derive).toEqual(['Eq', 'Hashable'])
+    })
+
+    it('parses pub struct', () => {
+      const stmt = parseStmt('pub struct Config { debug: Bool }') as StructDecl
+      expect(stmt.kind).toBe('StructDecl')
+      expect(stmt.pub).toBe(true)
+      expect(stmt.name).toBe('Config')
+    })
+
+    it('parses generic struct', () => {
+      const stmt = parseStmt('struct Pair<A, B> { first: A, second: B }') as StructDecl
+      expect(stmt.genericParams).toHaveLength(2)
+      expect(stmt.genericParams[0].name).toBe('A')
+      expect(stmt.genericParams[1].name).toBe('B')
+    })
+  })
+
+  // ─── Enum declarations ──────────────────────────────────────
+
+  describe('enum declarations', () => {
+    it('parses enum Color { Red, Green, Blue }', () => {
+      const stmt = parseStmt('enum Color { Red, Green, Blue }') as EnumDecl
+      expect(stmt.kind).toBe('EnumDecl')
+      expect(stmt.pub).toBe(false)
+      expect(stmt.name).toBe('Color')
+      expect(stmt.variants).toHaveLength(3)
+      expect(stmt.variants[0].name).toBe('Red')
+      expect(stmt.variants[0].fields).toHaveLength(0)
+      expect(stmt.variants[1].name).toBe('Green')
+      expect(stmt.variants[2].name).toBe('Blue')
+    })
+
+    it('parses enum Shape with data variants', () => {
+      const stmt = parseStmt('enum Shape { Circle(radius: Float), Rect(w: Float, h: Float) }') as EnumDecl
+      expect(stmt.kind).toBe('EnumDecl')
+      expect(stmt.variants).toHaveLength(2)
+      expect(stmt.variants[0].name).toBe('Circle')
+      expect(stmt.variants[0].fields).toHaveLength(1)
+      expect(stmt.variants[0].fields[0].name).toBe('radius')
+      expect((stmt.variants[0].fields[0].type as NamedType).name).toBe('Float')
+      expect(stmt.variants[1].name).toBe('Rect')
+      expect(stmt.variants[1].fields).toHaveLength(2)
+    })
+
+    it('parses pub enum', () => {
+      const stmt = parseStmt('pub enum Direction { Up, Down }') as EnumDecl
+      expect(stmt.kind).toBe('EnumDecl')
+      expect(stmt.pub).toBe(true)
+    })
+
+    it('parses generic enum', () => {
+      const stmt = parseStmt('enum Option<T> { Some(value: T), None }') as EnumDecl
+      expect(stmt.genericParams).toHaveLength(1)
+      expect(stmt.genericParams[0].name).toBe('T')
+      expect(stmt.variants).toHaveLength(2)
+    })
+  })
+
+  // ─── Type aliases ────────────────────────────────────────────
+
+  describe('type aliases', () => {
+    it('parses type UserId = Int', () => {
+      const stmt = parseStmt('type UserId = Int') as TypeAlias
+      expect(stmt.kind).toBe('TypeAlias')
+      expect(stmt.pub).toBe(false)
+      expect(stmt.name).toBe('UserId')
+      expect((stmt.type as NamedType).name).toBe('Int')
+    })
+
+    it('parses generic type alias type Pair<A, B> = Map<A, B>', () => {
+      const stmt = parseStmt('type Pair<A, B> = Map<A, B>') as TypeAlias
+      expect(stmt.kind).toBe('TypeAlias')
+      expect(stmt.genericParams).toHaveLength(2)
+      expect(stmt.genericParams[0].name).toBe('A')
+      expect(stmt.genericParams[1].name).toBe('B')
+      const target = stmt.type as GenericType
+      expect(target.kind).toBe('GenericType')
+      expect(target.name).toBe('Map')
+    })
+
+    it('parses pub type alias', () => {
+      const stmt = parseStmt('pub type Id = Int') as TypeAlias
+      expect(stmt.pub).toBe(true)
+    })
+  })
+
+  // ─── Impl blocks ────────────────────────────────────────────
+
+  describe('impl blocks', () => {
+    it('parses impl User { fn name(self) -> String { ... } }', () => {
+      const stmt = parseStmt('impl User { fn name(self) -> String { return self } }') as ImplBlock
+      expect(stmt.kind).toBe('ImplBlock')
+      expect(stmt.traitName).toBeUndefined()
+      expect(stmt.targetType).toBe('User')
+      expect(stmt.methods).toHaveLength(1)
+      expect(stmt.methods[0].name).toBe('name')
+      expect(stmt.methods[0].params[0].name).toBe('self')
+    })
+
+    it('parses impl Display for User { ... }', () => {
+      const stmt = parseStmt('impl Display for User { fn to_string(self) -> String { return self } }') as ImplBlock
+      expect(stmt.kind).toBe('ImplBlock')
+      expect(stmt.traitName).toBe('Display')
+      expect(stmt.targetType).toBe('User')
+      expect(stmt.methods).toHaveLength(1)
+    })
+
+    it('parses where clause: where T: Eq + Hashable', () => {
+      const stmt = parseStmt('impl<T> Container for Box<T> where T: Eq + Hashable { fn contains(self) -> Bool { return true } }') as ImplBlock
+      expect(stmt.genericParams).toHaveLength(1)
+      expect(stmt.genericParams[0].name).toBe('T')
+      expect(stmt.whereClause).toHaveLength(1)
+      expect(stmt.whereClause[0].typeName).toBe('T')
+      expect(stmt.whereClause[0].bounds).toEqual(['Eq', 'Hashable'])
+    })
+  })
+
+  // ─── Struct literals ────────────────────────────────────────
+
+  describe('struct literals', () => {
+    it('parses struct literal User { name: "Alice", age: 30 }', () => {
+      const expr = parseExpr('User { name: "Alice", age: 30 }') as StructLiteral
+      expect(expr.kind).toBe('StructLiteral')
+      expect(expr.name).toBe('User')
+      expect(expr.fields).toHaveLength(2)
+      expect(expr.fields[0].name).toBe('name')
+      expect((expr.fields[0].value as StringLiteral).value).toBe('Alice')
+      expect(expr.fields[1].name).toBe('age')
+      expect((expr.fields[1].value as IntLiteral).value).toBe(30)
+    })
+
+    it('parses struct update User { ...old, name: "Bob" }', () => {
+      const expr = parseExpr('User { ...old, name: "Bob" }') as StructLiteral
+      expect(expr.kind).toBe('StructLiteral')
+      expect(expr.name).toBe('User')
+      expect(expr.spread).toBeDefined()
+      expect((expr.spread as Identifier).name).toBe('old')
+      expect(expr.fields).toHaveLength(1)
+      expect(expr.fields[0].name).toBe('name')
+    })
+  })
+
+  // ─── Generic parameters ────────────────────────────────────
+
+  describe('generic parameters', () => {
+    it('parses function with generic parameters', () => {
+      const stmt = parseStmt('fn identity<T>(x: T) -> T { return x }') as FnDecl
+      expect(stmt.genericParams).toHaveLength(1)
+      expect(stmt.genericParams[0].name).toBe('T')
+      expect(stmt.genericParams[0].bounds).toHaveLength(0)
+    })
+
+    it('parses generic with trait bounds <T: Eq>', () => {
+      const stmt = parseStmt('fn compare<T: Eq>(a: T, b: T) -> Bool { return true }') as FnDecl
+      expect(stmt.genericParams).toHaveLength(1)
+      expect(stmt.genericParams[0].name).toBe('T')
+      expect(stmt.genericParams[0].bounds).toEqual(['Eq'])
+    })
+
+    it('parses generic with multiple bounds <T: Eq + Hashable>', () => {
+      const stmt = parseStmt('fn hash_eq<T: Eq + Hashable>(x: T) -> Int { return 0 }') as FnDecl
+      expect(stmt.genericParams[0].bounds).toEqual(['Eq', 'Hashable'])
+    })
+  })
+
+  // ─── Phase 5 error cases ──────────────────────────────────
+
+  describe('phase 5 parse errors', () => {
+    it('reports error for missing field type in struct', () => {
+      const result = parseWithErrors('struct Bad { name }')
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors.some(e => e.message.includes("':'"))).toBe(true)
+    })
+
+    it('reports error for duplicate variant name', () => {
+      const result = parseWithErrors('enum Bad { A, A }')
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors.some(e => e.code === 'E0206')).toBe(true)
     })
   })
 })

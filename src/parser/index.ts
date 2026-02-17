@@ -48,4 +48,18 @@ export type {
   WhileLoop,
   BreakStmt,
   ContinueStmt,
+  // Phase 5: Types & Data Structures
+  TypeExpr,
+  PrimitiveType,
+  NamedType,
+  GenericType,
+  FnType,
+  GenericParam,
+  StructField,
+  StructDecl,
+  EnumVariant,
+  EnumDecl,
+  TypeAlias,
+  ImplBlock,
+  WherePredicate,
 } from './ast.ts'

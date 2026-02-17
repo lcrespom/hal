@@ -335,7 +335,7 @@ blocks.
 
 ### Tasks
 
-- [ ] Define AST nodes:
+- [x] Define AST nodes:
   - `StructDecl` (pub, name, generic params, fields, invariants, derive)
   - `StructField` (name, type)
   - `InvariantClause` (body block)
@@ -347,41 +347,41 @@ blocks.
   - `GenericParams` (params with optional trait bounds)
   - `WhereClause` (predicates)
   - Type AST nodes: `PrimitiveType`, `NamedType`, `GenericType`, `FnType`
-- [ ] Implement type annotation parsing:
+- [x] Implement type annotation parsing:
   - Primitive types: `Int`, `Float`, `Bool`, `String`, `Void`, `Never`
   - Named types: `User`, `MyType`
   - Generic types: `List<Int>`, `Map<String, Int>`, `Result<User, Error>`
   - Function types: `fn(Int, Int) -> Int`
-- [ ] Implement struct declaration parsing (fields, invariants, derive)
-- [ ] Implement enum declaration parsing (unit and data variants)
-- [ ] Implement type alias parsing: `type UserId = Int`
-- [ ] Implement generic parameter parsing: `<T>`, `<T: Eq>`, `<T: Eq + Hashable>`
-- [ ] Implement where clause parsing: `where T: Serializable`
-- [ ] Implement impl block parsing: `impl Type { ... }` and `impl Trait for Type { ... }`
-- [ ] Implement struct literal parsing: `User { name: "Alice", age: 30 }`
-- [ ] Implement struct update syntax: `User { ...existing, name: "Bob" }`
+- [x] Implement struct declaration parsing (fields, invariants, derive)
+- [x] Implement enum declaration parsing (unit and data variants)
+- [x] Implement type alias parsing: `type UserId = Int`
+- [x] Implement generic parameter parsing: `<T>`, `<T: Eq>`, `<T: Eq + Hashable>`
+- [x] Implement where clause parsing: `where T: Serializable`
+- [x] Implement impl block parsing: `impl Type { ... }` and `impl Trait for Type { ... }`
+- [x] Implement struct literal parsing: `User { name: "Alice", age: 30 }`
+- [x] Implement struct update syntax: `User { ...existing, name: "Bob" }`
 
 ### Tests (write first)
 
-- [ ] Test: `struct User { name: String, age: Int }` → `StructDecl`
-- [ ] Test: struct with invariant
-- [ ] Test: struct with derive: `derive [Eq, Hashable]`
-- [ ] Test: `pub struct` → public struct
-- [ ] Test: `enum Color { Red, Green, Blue }` → `EnumDecl` with unit variants
-- [ ] Test: `enum Shape { Circle(radius: Float), Rect(w: Float, h: Float) }` → data
+- [x] Test: `struct User { name: String, age: Int }` → `StructDecl`
+- [x] Test: struct with invariant
+- [x] Test: struct with derive: `derive [Eq, Hashable]`
+- [x] Test: `pub struct` → public struct
+- [x] Test: `enum Color { Red, Green, Blue }` → `EnumDecl` with unit variants
+- [x] Test: `enum Shape { Circle(radius: Float), Rect(w: Float, h: Float) }` → data
       variants
-- [ ] Test: `type UserId = Int` → `TypeAlias`
-- [ ] Test: `type Pair<A, B> = { first: A, second: B }` → generic alias
-- [ ] Test: generic type annotation `List<Int>`
-- [ ] Test: nested generic `Result<List<User>, Error>`
-- [ ] Test: function type `fn(Int) -> Bool`
-- [ ] Test: `impl User { fn name(self) -> String { ... } }` → `ImplBlock`
-- [ ] Test: `impl Display for User { ... }` → trait impl
-- [ ] Test: where clause: `where T: Eq + Hashable`
-- [ ] Test: struct literal `User { name: "Alice", age: 30 }`
-- [ ] Test: struct update `User { ...old, name: "Bob" }`
-- [ ] Test: missing field type → structured error
-- [ ] Test: duplicate variant name → structured error
+- [x] Test: `type UserId = Int` → `TypeAlias`
+- [x] Test: `type Pair<A, B> = { first: A, second: B }` → generic alias
+- [x] Test: generic type annotation `List<Int>`
+- [x] Test: nested generic `Result<List<User>, Error>`
+- [x] Test: function type `fn(Int) -> Bool`
+- [x] Test: `impl User { fn name(self) -> String { ... } }` → `ImplBlock`
+- [x] Test: `impl Display for User { ... }` → trait impl
+- [x] Test: where clause: `where T: Eq + Hashable`
+- [x] Test: struct literal `User { name: "Alice", age: 30 }`
+- [x] Test: struct update `User { ...old, name: "Bob" }`
+- [x] Test: missing field type → structured error
+- [x] Test: duplicate variant name → structured error
 
 ### Deliverable
 

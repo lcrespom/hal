@@ -136,7 +136,7 @@ export interface ErrorPropagation extends BaseNode {
 export interface ClosureLiteral extends BaseNode {
   readonly kind: 'ClosureLiteral'
   readonly params: readonly Param[]
-  readonly returnType?: string
+  readonly returnType?: TypeExpr
   readonly body: Expr
 }
 
@@ -164,6 +164,36 @@ export interface ConcurrentBlock extends BaseNode {
   readonly kind: 'ConcurrentBlock'
   readonly exprs: readonly Expr[]
 }
+
+// ─── Type Expressions ────────────────────────────────────────────
+
+/** Primitive type: Int, Float, Bool, String, Void, Never */
+export interface PrimitiveType extends BaseNode {
+  readonly kind: 'PrimitiveType'
+  readonly name: string
+}
+
+/** Named type: User, MyType */
+export interface NamedType extends BaseNode {
+  readonly kind: 'NamedType'
+  readonly name: string
+}
+
+/** Generic type: List<Int>, Map<String, Int>, Result<User, Error> */
+export interface GenericType extends BaseNode {
+  readonly kind: 'GenericType'
+  readonly name: string
+  readonly args: readonly TypeExpr[]
+}
+
+/** Function type: fn(Int, Int) -> Int */
+export interface FnType extends BaseNode {
+  readonly kind: 'FnType'
+  readonly params: readonly TypeExpr[]
+  readonly returnType: TypeExpr
+}
+
+export type TypeExpr = PrimitiveType | NamedType | GenericType | FnType
 
 // ─── Patterns ────────────────────────────────────────────────────
 
@@ -239,14 +269,14 @@ export interface LetDecl extends BaseNode {
   readonly kind: 'LetDecl'
   readonly mutable: boolean
   readonly name: string
-  readonly typeAnnotation?: string
+  readonly typeAnnotation?: TypeExpr
   readonly initializer: Expr
 }
 
 export interface ConstDecl extends BaseNode {
   readonly kind: 'ConstDecl'
   readonly name: string
-  readonly typeAnnotation?: string
+  readonly typeAnnotation?: TypeExpr
   readonly initializer: Expr
 }
 
@@ -266,15 +296,16 @@ export interface ExprStatement extends BaseNode {
 export interface Param {
   readonly mutable: boolean
   readonly name: string
-  readonly type?: string
+  readonly type?: TypeExpr
 }
 
 export interface FnDecl extends BaseNode {
   readonly kind: 'FnDecl'
   readonly pub: boolean
   readonly name: string
+  readonly genericParams: readonly GenericParam[]
   readonly params: readonly Param[]
-  readonly returnType?: string
+  readonly returnType?: TypeExpr
   readonly effects?: readonly string[]
   readonly forbids?: readonly string[]
   readonly preconditions: readonly Expr[]
@@ -308,6 +339,63 @@ export interface ContinueStmt extends BaseNode {
   readonly kind: 'ContinueStmt'
 }
 
+// ─── Phase 5: Types & Data Structures ────────────────────────────
+
+export interface GenericParam {
+  readonly name: string
+  readonly bounds: readonly string[]
+}
+
+export interface StructField {
+  readonly name: string
+  readonly type: TypeExpr
+}
+
+export interface StructDecl extends BaseNode {
+  readonly kind: 'StructDecl'
+  readonly pub: boolean
+  readonly name: string
+  readonly genericParams: readonly GenericParam[]
+  readonly fields: readonly StructField[]
+  readonly invariants: readonly Expr[]
+  readonly derive: readonly string[]
+}
+
+export interface EnumVariant {
+  readonly name: string
+  readonly fields: readonly StructField[]
+}
+
+export interface EnumDecl extends BaseNode {
+  readonly kind: 'EnumDecl'
+  readonly pub: boolean
+  readonly name: string
+  readonly genericParams: readonly GenericParam[]
+  readonly variants: readonly EnumVariant[]
+}
+
+export interface TypeAlias extends BaseNode {
+  readonly kind: 'TypeAlias'
+  readonly pub: boolean
+  readonly name: string
+  readonly genericParams: readonly GenericParam[]
+  readonly type: TypeExpr
+}
+
+export interface ImplBlock extends BaseNode {
+  readonly kind: 'ImplBlock'
+  readonly traitName?: string
+  readonly targetType: string
+  readonly genericParams: readonly GenericParam[]
+  readonly whereClause: readonly WherePredicate[]
+  readonly methods: readonly FnDecl[]
+}
+
+export interface WherePredicate {
+  readonly typeName: string
+  readonly bounds: readonly string[]
+}
+
 /** All statement node types. */
 export type Stmt =
   | LetDecl
@@ -320,6 +408,10 @@ export type Stmt =
   | WhileLoop
   | BreakStmt
   | ContinueStmt
+  | StructDecl
+  | EnumDecl
+  | TypeAlias
+  | ImplBlock
 
 /** Result of parsing: a list of statements. */
 export interface ParseResult {

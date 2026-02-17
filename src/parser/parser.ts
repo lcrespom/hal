@@ -13,6 +13,11 @@ import type {
   Pattern,
   PatternField,
   Param,
+  TypeExpr,
+  GenericParam,
+  StructField,
+  EnumVariant,
+  WherePredicate,
 } from './ast.ts'
 
 // ─── Precedence levels (Pratt parser) ───────────────────────────
@@ -137,8 +142,12 @@ export class Parser {
   private parseStatement(): Stmt {
     if (this.check(TokenType.Let)) return this.parseLetDecl()
     if (this.check(TokenType.Const)) return this.parseConstDecl()
-    if (this.check(TokenType.Pub)) return this.parsePubFnDecl()
+    if (this.check(TokenType.Pub)) return this.parsePubDecl()
     if (this.check(TokenType.Fn) && this.isFnDecl()) return this.parseFnDecl(false)
+    if (this.check(TokenType.Struct)) return this.parseStructDecl(false)
+    if (this.check(TokenType.Enum)) return this.parseEnumDecl(false)
+    if (this.check(TokenType.Type)) return this.parseTypeAlias(false)
+    if (this.check(TokenType.Impl)) return this.parseImplBlock()
     if (this.check(TokenType.Return)) return this.parseReturnStmt()
     if (this.check(TokenType.For)) return this.parseForLoop()
     if (this.check(TokenType.While)) return this.parseWhileLoop()
@@ -161,10 +170,9 @@ export class Parser {
     const nameToken = this.expect(TokenType.Ident, `Expected variable name after 'let'`)
     const name = nameToken.lexeme
 
-    let typeAnnotation: string | undefined
+    let typeAnnotation: TypeExpr | undefined
     if (this.match(TokenType.Colon)) {
-      const typeToken = this.expect(TokenType.Ident, `Expected type name after ':'`)
-      typeAnnotation = typeToken.lexeme
+      typeAnnotation = this.parseTypeAnnotation()
     }
 
     this.expect(TokenType.Eq, `Expected '=' in let declaration`)
@@ -184,10 +192,9 @@ export class Parser {
     const nameToken = this.expect(TokenType.Ident, `Expected constant name after 'const'`)
     const name = nameToken.lexeme
 
-    let typeAnnotation: string | undefined
+    let typeAnnotation: TypeExpr | undefined
     if (this.match(TokenType.Colon)) {
-      const typeToken = this.expect(TokenType.Ident, `Expected type name after ':'`)
-      typeAnnotation = typeToken.lexeme
+      typeAnnotation = this.parseTypeAnnotation()
     }
 
     this.expect(TokenType.Eq, `Expected '=' in const declaration`)
@@ -201,12 +208,14 @@ export class Parser {
     }
   }
 
-  private parsePubFnDecl(): Stmt {
+  private parsePubDecl(): Stmt {
     const start = this.peek()
     this.advance() // consume 'pub'
-    if (!this.check(TokenType.Fn)) {
-      this.error('E0201', `Expected 'fn' after 'pub'`, this.peek().span)
-    }
+    if (this.check(TokenType.Fn)) return this.parseFnDecl(true, start.span)
+    if (this.check(TokenType.Struct)) return this.parseStructDecl(true, start.span)
+    if (this.check(TokenType.Enum)) return this.parseEnumDecl(true, start.span)
+    if (this.check(TokenType.Type)) return this.parseTypeAlias(true, start.span)
+    this.error('E0201', `Expected 'fn', 'struct', 'enum', or 'type' after 'pub'`, this.peek().span)
     return this.parseFnDecl(true, start.span)
   }
 
@@ -216,16 +225,18 @@ export class Parser {
     const nameToken = this.expect(TokenType.Ident, `Expected function name after 'fn'`)
     const name = nameToken.lexeme
 
+    // Generic parameters
+    const genericParams = this.check(TokenType.Lt) ? this.parseGenericParams() : []
+
     // Parameters
     this.expect(TokenType.LParen, `Expected '(' after function name`)
     const params = this.parseParamList()
     this.expect(TokenType.RParen, `Expected ')' after parameters`)
 
     // Return type
-    let returnType: string | undefined
+    let returnType: TypeExpr | undefined
     if (this.match(TokenType.Arrow)) {
-      const typeToken = this.expect(TokenType.Ident, `Expected return type after '->'`)
-      returnType = typeToken.lexeme
+      returnType = this.parseTypeAnnotation()
     }
 
     // Effects clause: effects [Io, Network]
@@ -269,6 +280,7 @@ export class Parser {
         kind: 'FnDecl',
         pub,
         name,
+        genericParams,
         params,
         returnType,
         effects,
@@ -285,6 +297,7 @@ export class Parser {
       kind: 'FnDecl',
       pub,
       name,
+      genericParams,
       params,
       returnType,
       effects,
@@ -299,12 +312,18 @@ export class Parser {
   private parseParamList(): Param[] {
     const params: Param[] = []
     while (!this.check(TokenType.RParen) && !this.check(TokenType.EOF)) {
+      // Handle `self` parameter
+      if (this.check(TokenType.Ident) && this.peek().lexeme === 'self') {
+        const nameToken = this.advance()
+        params.push({ mutable: false, name: nameToken.lexeme })
+        if (!this.match(TokenType.Comma)) break
+        continue
+      }
       const mutable = !!this.match(TokenType.Mut)
       const nameToken = this.expect(TokenType.Ident, `Expected parameter name`)
-      let type: string | undefined
+      let type: TypeExpr | undefined
       if (this.match(TokenType.Colon)) {
-        const typeToken = this.expect(TokenType.Ident, `Expected parameter type`)
-        type = typeToken.lexeme
+        type = this.parseTypeAnnotation()
       }
       params.push({ mutable, name: nameToken.lexeme, type })
       if (!this.match(TokenType.Comma)) break
@@ -638,7 +657,33 @@ export class Parser {
 
   private parseIdentifier(): Expr {
     const token = this.advance()
+
+    // Struct literal: UpperCaseName { field: value }
+    // Only treat as struct literal if name starts with uppercase
+    if (
+      this.check(TokenType.LBrace) &&
+      token.lexeme[0] >= 'A' && token.lexeme[0] <= 'Z' &&
+      this.isStructLiteral()
+    ) {
+      return this.parseStructLiteral(token.lexeme, token.span)
+    }
+
     return { kind: 'Identifier', name: token.lexeme, span: token.span }
+  }
+
+  /**
+   * Lookahead to distinguish struct literal `Name { field: value }` from
+   * block following an identifier. We look for `{ ident : ` or `{ ... ` patterns.
+   */
+  private isStructLiteral(): boolean {
+    // Look ahead: { <ident> : or { ...
+    const bracePos = this.pos // pointing at '{'
+    if (bracePos + 1 >= this.tokens.length) return false
+    const afterBrace = this.tokens[bracePos + 1]
+    if (afterBrace.type === TokenType.Spread) return true
+    if (afterBrace.type === TokenType.RBrace) return true // empty struct
+    if (bracePos + 2 >= this.tokens.length) return false
+    return afterBrace.type === TokenType.Ident && this.tokens[bracePos + 2].type === TokenType.Colon
   }
 
   // ─── Unary ──────────────────────────────────────────────────
@@ -744,10 +789,9 @@ export class Parser {
     const params = this.parseParamList()
     this.expect(TokenType.RParen, `Expected ')' after closure parameters`)
 
-    let returnType: string | undefined
+    let returnType: TypeExpr | undefined
     if (this.match(TokenType.Arrow)) {
-      const typeToken = this.expect(TokenType.Ident, `Expected return type after '->'`)
-      returnType = typeToken.lexeme
+      returnType = this.parseTypeAnnotation()
     }
 
     const body = this.parseBlockExpr()
@@ -916,6 +960,322 @@ export class Parser {
     return fields
   }
 
+  // ─── Type Annotations ───────────────────────────────────────
+
+  private parseTypeAnnotation(): TypeExpr {
+    const token = this.peek()
+
+    // Function type: fn(Int, Int) -> Int
+    if (this.check(TokenType.Fn)) {
+      return this.parseFnType()
+    }
+
+    const nameToken = this.expect(TokenType.Ident, `Expected type name`)
+    const name = nameToken.lexeme
+
+    // Generic type: List<Int>, Map<String, Int>
+    if (this.check(TokenType.Lt)) {
+      return this.parseGenericType(name, nameToken.span)
+    }
+
+    // Named/Primitive type
+    return { kind: 'NamedType', name, span: nameToken.span }
+  }
+
+  private parseFnType(): TypeExpr {
+    const start = this.advance() // consume 'fn'
+    this.expect(TokenType.LParen, `Expected '(' in function type`)
+    const params: TypeExpr[] = []
+    while (!this.check(TokenType.RParen) && !this.check(TokenType.EOF)) {
+      params.push(this.parseTypeAnnotation())
+      if (!this.match(TokenType.Comma)) break
+    }
+    this.expect(TokenType.RParen, `Expected ')' in function type`)
+    this.expect(TokenType.Arrow, `Expected '->' in function type`)
+    const returnType = this.parseTypeAnnotation()
+    return {
+      kind: 'FnType',
+      params,
+      returnType,
+      span: this.spanFrom(start.span),
+    }
+  }
+
+  private parseGenericType(name: string, startSpan: Span): TypeExpr {
+    this.advance() // consume '<'
+    const args: TypeExpr[] = []
+    while (!this.check(TokenType.Gt) && !this.check(TokenType.EOF)) {
+      args.push(this.parseTypeAnnotation())
+      if (!this.match(TokenType.Comma)) break
+    }
+    this.expect(TokenType.Gt, `Expected '>' after generic type arguments`)
+    return {
+      kind: 'GenericType',
+      name,
+      args,
+      span: this.spanFrom(startSpan),
+    }
+  }
+
+  // ─── Generic Parameters ───────────────────────────────────
+
+  private parseGenericParams(): GenericParam[] {
+    this.advance() // consume '<'
+    const params: GenericParam[] = []
+    while (!this.check(TokenType.Gt) && !this.check(TokenType.EOF)) {
+      const nameToken = this.expect(TokenType.Ident, `Expected generic parameter name`)
+      const bounds: string[] = []
+      if (this.match(TokenType.Colon)) {
+        bounds.push(this.expect(TokenType.Ident, `Expected trait bound`).lexeme)
+        while (this.match(TokenType.Plus)) {
+          bounds.push(this.expect(TokenType.Ident, `Expected trait bound after '+'`).lexeme)
+        }
+      }
+      params.push({ name: nameToken.lexeme, bounds })
+      if (!this.match(TokenType.Comma)) break
+    }
+    this.expect(TokenType.Gt, `Expected '>' after generic parameters`)
+    return params
+  }
+
+  /** Skip over generic type arguments like `<T>` or `<A, B>` without building AST. */
+  private skipGenericArgs(): void {
+    this.advance() // consume '<'
+    let depth = 1
+    while (depth > 0 && !this.check(TokenType.EOF)) {
+      if (this.check(TokenType.Lt)) depth++
+      else if (this.check(TokenType.Gt)) depth--
+      if (depth > 0) this.advance()
+    }
+    if (this.check(TokenType.Gt)) this.advance()
+  }
+
+  private parseWhereClause(): WherePredicate[] {
+    const predicates: WherePredicate[] = []
+    this.advance() // consume 'where'
+    while (this.check(TokenType.Ident) && !this.check(TokenType.LBrace) && !this.check(TokenType.EOF)) {
+      const typeName = this.expect(TokenType.Ident, `Expected type name in where clause`).lexeme
+      this.expect(TokenType.Colon, `Expected ':' in where clause`)
+      const bounds: string[] = []
+      bounds.push(this.expect(TokenType.Ident, `Expected trait bound`).lexeme)
+      while (this.match(TokenType.Plus)) {
+        bounds.push(this.expect(TokenType.Ident, `Expected trait bound after '+'`).lexeme)
+      }
+      predicates.push({ typeName, bounds })
+      if (!this.match(TokenType.Comma)) break
+    }
+    return predicates
+  }
+
+  // ─── Struct Declaration ─────────────────────────────────────
+
+  private parseStructDecl(pub: boolean, startSpan?: Span): Stmt {
+    const structToken = this.advance() // consume 'struct'
+    const start = startSpan ?? structToken.span
+    const nameToken = this.expect(TokenType.Ident, `Expected struct name after 'struct'`)
+    const name = nameToken.lexeme
+
+    const genericParams = this.check(TokenType.Lt) ? this.parseGenericParams() : []
+
+    this.expect(TokenType.LBrace, `Expected '{' after struct name`)
+
+    const fields: StructField[] = []
+    const invariants: Expr[] = []
+    let derive: string[] = []
+
+    while (!this.check(TokenType.RBrace) && !this.check(TokenType.EOF)) {
+      if (this.match(TokenType.Invariant)) {
+        invariants.push(this.parseBlockExpr())
+      } else if (this.match(TokenType.Derive)) {
+        derive = this.parseBracketedNames()
+      } else {
+        // Field: name: Type
+        const fieldName = this.expect(TokenType.Ident, `Expected field name`)
+        this.expect(TokenType.Colon, `Expected ':' after field name`)
+        const fieldType = this.parseTypeAnnotation()
+        fields.push({ name: fieldName.lexeme, type: fieldType })
+        this.match(TokenType.Comma) // optional comma
+      }
+    }
+
+    this.expect(TokenType.RBrace, `Expected '}' after struct body`)
+    return {
+      kind: 'StructDecl',
+      pub,
+      name,
+      genericParams,
+      fields,
+      invariants,
+      derive,
+      span: this.spanFrom(start),
+    }
+  }
+
+  // ─── Enum Declaration ──────────────────────────────────────
+
+  private parseEnumDecl(pub: boolean, startSpan?: Span): Stmt {
+    const enumToken = this.advance() // consume 'enum'
+    const start = startSpan ?? enumToken.span
+    const nameToken = this.expect(TokenType.Ident, `Expected enum name after 'enum'`)
+    const name = nameToken.lexeme
+
+    const genericParams = this.check(TokenType.Lt) ? this.parseGenericParams() : []
+
+    this.expect(TokenType.LBrace, `Expected '{' after enum name`)
+
+    const variants: EnumVariant[] = []
+    const seenNames = new Set<string>()
+
+    while (!this.check(TokenType.RBrace) && !this.check(TokenType.EOF)) {
+      const variantName = this.expect(TokenType.Ident, `Expected variant name`)
+
+      if (seenNames.has(variantName.lexeme)) {
+        this.error('E0206', `Duplicate variant name '${variantName.lexeme}'`, variantName.span)
+      }
+      seenNames.add(variantName.lexeme)
+
+      const variantFields: StructField[] = []
+      if (this.match(TokenType.LParen)) {
+        while (!this.check(TokenType.RParen) && !this.check(TokenType.EOF)) {
+          const fieldName = this.expect(TokenType.Ident, `Expected field name`)
+          this.expect(TokenType.Colon, `Expected ':' after field name`)
+          const fieldType = this.parseTypeAnnotation()
+          variantFields.push({ name: fieldName.lexeme, type: fieldType })
+          if (!this.match(TokenType.Comma)) break
+        }
+        this.expect(TokenType.RParen, `Expected ')' after variant fields`)
+      }
+
+      variants.push({ name: variantName.lexeme, fields: variantFields })
+      this.match(TokenType.Comma) // optional comma
+    }
+
+    this.expect(TokenType.RBrace, `Expected '}' after enum body`)
+    return {
+      kind: 'EnumDecl',
+      pub,
+      name,
+      genericParams,
+      variants,
+      span: this.spanFrom(start),
+    }
+  }
+
+  // ─── Type Alias ────────────────────────────────────────────
+
+  private parseTypeAlias(pub: boolean, startSpan?: Span): Stmt {
+    const typeToken = this.advance() // consume 'type'
+    const start = startSpan ?? typeToken.span
+    const nameToken = this.expect(TokenType.Ident, `Expected type name after 'type'`)
+    const name = nameToken.lexeme
+
+    const genericParams = this.check(TokenType.Lt) ? this.parseGenericParams() : []
+
+    this.expect(TokenType.Eq, `Expected '=' in type alias`)
+    const type = this.parseTypeAnnotation()
+    return {
+      kind: 'TypeAlias',
+      pub,
+      name,
+      genericParams,
+      type,
+      span: this.spanFrom(start),
+    }
+  }
+
+  // ─── Impl Block ────────────────────────────────────────────
+
+  private parseImplBlock(): Stmt {
+    const start = this.advance() // consume 'impl'
+
+    const genericParams = this.check(TokenType.Lt) ? this.parseGenericParams() : []
+
+    const firstName = this.expect(TokenType.Ident, `Expected type name after 'impl'`).lexeme
+
+    let traitName: string | undefined
+    let targetType: string
+
+    // Skip generic type args on first name (e.g., impl<T> Foo<T> or impl Trait for Foo<T>)
+    if (this.check(TokenType.Lt)) {
+      // Skip past the generic args — they're for the impl target type
+      this.skipGenericArgs()
+    }
+
+    // impl Trait for Type { ... } vs impl Type { ... }
+    if (this.match(TokenType.For)) {
+      traitName = firstName
+      targetType = this.expect(TokenType.Ident, `Expected type name after 'for'`).lexeme
+      // Skip generic args on target type
+      if (this.check(TokenType.Lt)) {
+        this.skipGenericArgs()
+      }
+    } else {
+      targetType = firstName
+    }
+
+    const whereClause = this.check(TokenType.Where) ? this.parseWhereClause() : []
+
+    this.expect(TokenType.LBrace, `Expected '{' after impl header`)
+
+    const methods: import('./ast.ts').FnDecl[] = []
+    while (!this.check(TokenType.RBrace) && !this.check(TokenType.EOF)) {
+      const pub = !!this.match(TokenType.Pub)
+      if (this.check(TokenType.Fn)) {
+        methods.push(this.parseFnDecl(pub) as import('./ast.ts').FnDecl)
+      } else {
+        this.error('E0201', `Expected 'fn' in impl block`, this.peek().span)
+        this.advance() // skip bad token
+      }
+    }
+
+    this.expect(TokenType.RBrace, `Expected '}' after impl block`)
+    return {
+      kind: 'ImplBlock',
+      traitName,
+      targetType,
+      genericParams,
+      whereClause,
+      methods,
+      span: this.spanFrom(start.span),
+    }
+  }
+
+  // ─── Struct Literal Parsing ─────────────────────────────────
+
+  /**
+   * When we see `Ident {`, it could be a struct literal.
+   * This is called from parseIdentifier when followed by `{`.
+   */
+  private parseStructLiteral(name: string, startSpan: Span): Expr {
+    this.advance() // consume '{'
+    const fields: import('./ast.ts').StructFieldInit[] = []
+    let spread: Expr | undefined
+
+    while (!this.check(TokenType.RBrace) && !this.check(TokenType.EOF)) {
+      // Spread: ...existing
+      if (this.match(TokenType.Spread)) {
+        spread = this.parseExpression()
+        this.match(TokenType.Comma) // optional comma
+        continue
+      }
+
+      const fieldName = this.expect(TokenType.Ident, `Expected field name in struct literal`)
+      this.expect(TokenType.Colon, `Expected ':' after field name`)
+      const value = this.parseExpression()
+      fields.push({ name: fieldName.lexeme, value })
+      if (!this.match(TokenType.Comma)) break
+    }
+
+    this.expect(TokenType.RBrace, `Expected '}' after struct literal`)
+    return {
+      kind: 'StructLiteral',
+      name,
+      fields,
+      spread,
+      span: this.spanFrom(startSpan),
+    }
+  }
+
   // ─── Concurrent ─────────────────────────────────────────────
 
   private parseConcurrentBlock(): Expr {
@@ -989,7 +1349,11 @@ export class Parser {
       t === TokenType.While ||
       t === TokenType.Break ||
       t === TokenType.Continue ||
-      (t === TokenType.Pub) ||
+      t === TokenType.Pub ||
+      t === TokenType.Struct ||
+      t === TokenType.Enum ||
+      t === TokenType.Type ||
+      t === TokenType.Impl ||
       (t === TokenType.Fn && this.isFnDecl())
     )
   }
