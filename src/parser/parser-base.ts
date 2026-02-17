@@ -11,8 +11,11 @@ import { createError } from '../errors/hal-error.ts'
 export abstract class ParserBase {
   protected pos = 0
   protected readonly errors: HalError[] = []
+  protected readonly tokens: readonly Token[]
 
-  constructor(protected readonly tokens: readonly Token[]) {}
+  constructor(tokens: readonly Token[]) {
+    this.tokens = tokens
+  }
 
   // ─── Token navigation ───────────────────────────────────────
 
